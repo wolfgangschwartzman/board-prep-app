@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Boards Blueprint</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <button id="exitFocusBtn" class="floating-exit-btn">Exit Focus Mode</button>
+    <div class="page-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">USMLE Step 1 + COMLEX Level 1</p>
+          <h1>Boards Blueprint</h1>
+          <p class="hero-copy">
+            A dedicated USMLE Step 1 and COMLEX Level 1 study planner with your
+            day-by-day schedule, qbank tracking, practice exam logging, backlog
+            review, and a daily command center to keep prep on track.
+          </p>
+        </div>
+        <div class="hero-panel">
+          <div class="countdown-grid" id="countdownGrid"></div>
+          <div class="hero-actions">
+            <button id="jumpToTodayBtn" class="primary-btn">Jump to Today</button>
+            <button id="focusModeBtn" class="ghost-btn">Focus Mode</button>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section class="dashboard-grid">
+          <article class="card spotlight-card">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Today</p>
+                <h2 id="todayTitle">Daily Focus</h2>
+              </div>
+              <span id="todayPhaseBadge" class="badge"></span>
+            </div>
+            <div id="todaySpotlight" class="spotlight-body"></div>
+          </article>
+
+          <article class="card performance-card">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Performance</p>
+                <h2>Qbank Pulse</h2>
+              </div>
+            </div>
+            <div id="performancePanel" class="performance-panel"></div>
+          </article>
+
+          <article class="card">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Trajectory</p>
+                <h2>Prep Snapshot</h2>
+              </div>
+            </div>
+            <div id="snapshotStats" class="stat-stack"></div>
+          </article>
+
+          <article class="card">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Coverage</p>
+                <h2>System Rotation</h2>
+              </div>
+            </div>
+            <div id="coverageBars" class="coverage-bars"></div>
+          </article>
+
+          <article class="card review-prompt-card">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Review Prompt</p>
+                <h2>Random Missed Topic</h2>
+              </div>
+              <button id="nextReviewPromptBtn" type="button" class="ghost-btn review-prompt-btn">Next Topic</button>
+            </div>
+            <div id="reviewPromptCard" class="review-prompt-body"></div>
+          </article>
+        </section>
+
+        <section id="plannerSection" class="workspace-grid">
+          <div class="planner-column">
+            <article class="card planner-card">
+              <button id="calendarExpandBtn" type="button" class="planner-expand-btn">Expand Calendar</button>
+              <div class="planner-toolbar">
+                <div>
+                  <p class="section-kicker">Planner</p>
+                  <h2>Calendar View</h2>
+                </div>
+                <div class="toolbar-controls">
+                  <select id="monthSelect" aria-label="Select month"></select>
+                  <select id="typeFilter" aria-label="Filter by day type">
+                    <option value="All">All types</option>
+                  </select>
+                </div>
+              </div>
+              <div class="weekday-row">
+                <span>Sun</span>
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+              </div>
+              <div id="calendarGrid" class="calendar-grid"></div>
+            </article>
+
+            <article class="card trend-section-card">
+              <div class="section-heading">
+                <div>
+                  <p class="section-kicker">Trend Charts</p>
+                  <h2>Qbank Trends</h2>
+                </div>
+              </div>
+              <div id="trendCharts" class="trend-grid"></div>
+            </article>
+          </div>
+
+          <article class="card detail-card">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Command Center</p>
+                <h2 id="detailTitle">Day Details</h2>
+              </div>
+              <span id="detailTypeBadge" class="badge accent"></span>
+            </div>
+
+            <div id="detailMeta" class="detail-meta"></div>
+            <div id="carryOverBox" class="carry-over-box hidden"></div>
+
+            <div class="detail-block command-section">
+              <h3>Study Plan</h3>
+              <div id="detailPlan" class="plan-list"></div>
+              <div class="custom-task-composer">
+                <label>
+                  Add custom study task
+                  <input
+                    id="customTaskInput"
+                    type="text"
+                    placeholder="Add a one-off task for this day"
+                  />
+                </label>
+                <button id="addCustomTaskBtn" type="button" class="ghost-btn">Add Task</button>
+              </div>
+            </div>
+
+            <div class="detail-block command-section">
+              <h3>Daily Check-in</h3>
+              <form id="entryForm" class="entry-form">
+                <label class="checkbox-row">
+                  <input id="completedInput" type="checkbox" />
+                  <span>Mark this day complete</span>
+                </label>
+
+                <div class="form-grid">
+                  <label>
+                    Energy
+                    <select id="energyInput">
+                      <option value="">Select</option>
+                      <option value="Drained">Drained</option>
+                      <option value="Low">Low</option>
+                      <option value="Uneven">Uneven</option>
+                      <option value="Steady">Steady</option>
+                      <option value="Good">Good</option>
+                      <option value="High">High</option>
+                      <option value="Peak">Peak</option>
+                    </select>
+                  </label>
+                  <label>
+                    Confidence
+                    <select id="confidenceInput">
+                      <option value="">Select</option>
+                      <option value="Very Shaky">Very Shaky</option>
+                      <option value="Shaky">Shaky</option>
+                      <option value="Mixed">Mixed</option>
+                      <option value="Okay">Okay</option>
+                      <option value="Solid">Solid</option>
+                      <option value="Locked In">Locked In</option>
+                      <option value="Crushing It">Crushing It</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="detail-block block-tracker-block">
+                  <div class="block-tracker-header">
+                    <div>
+                      <h3>Question Block Tracker</h3>
+                      <p class="muted">
+                        Log individual TrueLearn and UWorld blocks with question counts and scores.
+                      </p>
+                    </div>
+                    <div class="hero-actions">
+                      <button id="addTlBlockBtn" type="button" class="ghost-btn">Add TrueLearn Block</button>
+                      <button id="addUwBlockBtn" type="button" class="ghost-btn">Add UWorld Block</button>
+                    </div>
+                  </div>
+
+                  <div class="pdf-drop-zone">
+                    <strong>Import block from pasted report text</strong>
+                    <div id="pdfImportStatus" class="muted">
+                      Paste copied TrueLearn or UWorld report text below, then choose the source.
+                    </div>
+                    <label>
+                      Report text
+                      <textarea
+                        id="pdfPasteInput"
+                        rows="6"
+                        placeholder="Paste text copied from a TrueLearn or UWorld report here."
+                      ></textarea>
+                    </label>
+                    <div class="hero-actions">
+                      <button id="pasteTlBtn" type="button" class="ghost-btn">Import as TrueLearn</button>
+                      <button id="pasteUwBtn" type="button" class="ghost-btn">Import as UWorld</button>
+                    </div>
+                  </div>
+
+                  <div id="blockSummary" class="block-summary-grid"></div>
+                  <div id="blockTrackerList" class="block-tracker-list"></div>
+                </div>
+
+                <label>
+                  Weak topics / misses
+                  <textarea
+                    id="weakTopicsInput"
+                    rows="4"
+                    placeholder="What needs a second pass?"
+                  ></textarea>
+                </label>
+                <div id="weakTopicTags" class="topic-tag-list"></div>
+
+                <label>
+                  Personal notes
+                  <textarea
+                    id="personalNoteInput"
+                    rows="4"
+                    placeholder="How did the day actually go?"
+                  ></textarea>
+                </label>
+
+                <div class="catchup-row">
+                  <label>
+                    Roll unfinished work to
+                    <select id="carryOverDate"></select>
+                  </label>
+                  <button id="carryOverBtn" type="button" class="ghost-btn">
+                    Add Catch-up Card
+                  </button>
+                </div>
+              </form>
+            </div>
+          </article>
+        </section>
+
+        <section class="bottom-grid">
+          <article class="card utility-card">
+            <button id="examCollapseBtn" type="button" class="planner-expand-btn section-utility-btn">Collapse Exams</button>
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Assessments</p>
+                <h2>Practice Exam Tracker</h2>
+              </div>
+            </div>
+            <div class="hero-actions section-actions">
+              <button id="addPracticeExamBtn" type="button" class="ghost-btn">Add Practice Exam</button>
+            </div>
+            <div id="examPreview" class="exam-preview hidden"></div>
+            <div id="examList" class="exam-list"></div>
+          </article>
+
+          <article class="card utility-card">
+            <button id="topicsCollapseBtn" type="button" class="planner-expand-btn section-utility-btn">Collapse Topics</button>
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Catch-up</p>
+                <h2>Topics to Review</h2>
+              </div>
+            </div>
+            <div id="topicsPreview" class="exam-preview hidden"></div>
+            <div id="reviewQueue" class="review-queue"></div>
+            <div id="topicTagSummary" class="topic-tag-summary"></div>
+            <div id="backlogList" class="backlog-list"></div>
+          </article>
+        </section>
+
+        <section class="backup-grid">
+          <article class="card utility-card backup-card">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Share + Backup</p>
+                <h2>Import Schedule</h2>
+              </div>
+            </div>
+            <div class="backup-actions">
+              <button id="selectScheduleCsvBtn" type="button" class="ghost-btn">Choose CSV</button>
+              <button id="applyScheduleImportBtn" type="button" class="ghost-btn hidden">Import Schedule</button>
+              <button id="resetScheduleBtn" type="button" class="ghost-btn hidden">Use Built-in Schedule</button>
+              <input id="scheduleCsvInput" type="file" accept=".csv,text/csv" class="hidden-file-input" />
+            </div>
+            <div id="scheduleImportStatus" class="muted">
+              Import a CSV and map your columns. Required fields: date, system, type, content focus.
+            </div>
+            <div id="scheduleImportMapper" class="schedule-import-mapper hidden"></div>
+
+            <div class="backup-divider"></div>
+
+            <div class="section-heading compact-heading">
+              <div>
+                <p class="section-kicker">Backup</p>
+                <h2>Export / Import Data</h2>
+              </div>
+            </div>
+            <div class="backup-actions">
+              <button id="exportBackupBtn" type="button" class="ghost-btn">Export Backup</button>
+              <button id="importBackupBtn" type="button" class="ghost-btn">Import Backup</button>
+              <input id="importBackupInput" type="file" accept="application/json" class="hidden-file-input" />
+            </div>
+            <div id="backupStatus" class="muted">
+              Save a JSON backup of your planner data or restore from a previous export.
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script src="./data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
