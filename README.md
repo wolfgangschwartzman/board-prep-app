@@ -19,7 +19,7 @@ Open [index.html](/Users/wolfs/Documents/board-prep-app/index.html) in a browser
 
 ## Share it with other people
 
-The app can now be shared as code. A friend can open [index.html](/Users/wolfs/Documents/board-prep-app/index.html), scroll to the bottom, and use `Import Schedule` to bring in their own CSV calendar.
+The app can now be shared as code. A friend can open [index.html](/Users/wolfs/Documents/board-prep-app/index.html), scroll to the bottom, and use `Import Schedule` to bring in their own CSV, TSV, or spreadsheet text export.
 
 Required mapped columns:
 
@@ -37,6 +37,13 @@ Optional mapped columns:
 - `Week`
 
 The imported schedule is saved locally in that browser, and `Use Built-in Schedule` switches back to the original embedded plan.
+
+The importer is tolerant of a few common spreadsheet quirks:
+
+- extra title rows above the real header row
+- comma-, tab-, or semicolon-separated exports
+- Excel-style numeric dates
+- alternate but similar column names
 
 ## Publish on GitHub Pages
 

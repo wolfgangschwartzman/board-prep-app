@@ -300,10 +300,10 @@
               <button id="selectScheduleCsvBtn" type="button" class="ghost-btn">Choose CSV</button>
               <button id="applyScheduleImportBtn" type="button" class="ghost-btn hidden">Import Schedule</button>
               <button id="resetScheduleBtn" type="button" class="ghost-btn hidden">Use Built-in Schedule</button>
-              <input id="scheduleCsvInput" type="file" accept=".csv,text/csv" class="hidden-file-input" />
+              <input id="scheduleCsvInput" type="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain" class="hidden-file-input" />
             </div>
             <div id="scheduleImportStatus" class="muted">
-              Import a CSV and map your columns. Required fields: date, system, type, content focus.
+              Import a CSV, TSV, or spreadsheet text export and map your columns. Required fields: date, system, type, content focus.
             </div>
             <div id="scheduleImportMapper" class="schedule-import-mapper hidden"></div>
 

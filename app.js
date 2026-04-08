@@ -1840,15 +1840,21 @@ function handleScheduleCsvSelect(event) {
   reader.onload = () => {
     try {
       const csvText = String(reader.result || "");
-      const rows = parseCsv(csvText);
-      if (!rows.length) {
+      const parsedImport = parseDelimitedText(csvText);
+      if (!parsedImport.rows.length) {
         throw new Error("No rows");
       }
-      const headers = rows[0].map((value, index) => {
+      const headerRowIndex = findHeaderRowIndex(parsedImport.rows);
+      if (headerRowIndex < 0) {
+        throw new Error("Missing header row");
+      }
+      const headers = parsedImport.rows[headerRowIndex].map((value, index) => {
         const text = String(value || "").trim();
         return index === 0 ? text.replace(/^\uFEFF/, "") : text;
       });
-      const dataRows = rows.slice(1).filter((row) => row.some((cell) => String(cell || "").trim()));
+      const dataRows = parsedImport.rows
+        .slice(headerRowIndex + 1)
+        .filter((row) => row.some((cell) => String(cell || "").trim()));
       if (!headers.length || !dataRows.length) {
         throw new Error("Missing headers or rows");
       }
@@ -1856,12 +1862,14 @@ function handleScheduleCsvSelect(event) {
         headers,
         rows: dataRows,
         mappings: guessScheduleMappings(headers),
+        delimiter: parsedImport.delimiter,
+        headerRowIndex,
       };
       renderScheduleImportMapper();
-      els.scheduleImportStatus.textContent = `Loaded ${dataRows.length} CSV rows. Map your columns, then import your schedule.`;
+      els.scheduleImportStatus.textContent = `Loaded ${dataRows.length} rows from a ${parsedImport.delimiterLabel} file. Map your columns, then import your schedule.`;
     } catch (error) {
       state.csvImport = null;
-      els.scheduleImportStatus.textContent = "That CSV could not be read. Try a simpler CSV export with a header row.";
+      els.scheduleImportStatus.textContent = "That spreadsheet file could not be read. Export as CSV from Excel or Google Sheets and make sure there is a header row.";
     } finally {
       els.scheduleCsvInput.value = "";
       syncScheduleImportUi();
@@ -1911,7 +1919,10 @@ function renderScheduleImportMapper() {
         )
         .join("")}
     </div>
-    <div class="muted import-preview">Preview: ${escapeHtml(state.csvImport.headers.slice(0, 5).join(" • "))}${state.csvImport.headers.length > 5 ? " ..." : ""}</div>
+    <div class="muted import-preview">
+      Detected ${escapeHtml(state.csvImport.delimiter === "\t" ? "tab-separated" : state.csvImport.delimiter === ";" ? "semicolon-separated" : "comma-separated")} file • header row ${state.csvImport.headerRowIndex + 1}<br />
+      Preview: ${escapeHtml(state.csvImport.headers.slice(0, 6).join(" • "))}${state.csvImport.headers.length > 6 ? " ..." : ""}
+    </div>
   `;
 
   els.scheduleImportMapper.querySelectorAll("[data-import-map]").forEach((select) => {
@@ -1926,21 +1937,24 @@ function applyScheduleImport() {
     return;
   }
 
-  const imported = buildImportedSchedule(state.csvImport);
-  if (!imported.length) {
-    els.scheduleImportStatus.textContent = "Import failed. Make sure date, system, type, and content focus are mapped and populated.";
+  const result = buildImportedSchedule(state.csvImport);
+  if (!result.schedule.length) {
+    els.scheduleImportStatus.textContent =
+      "Import failed. Make sure date, system, type, and content focus are mapped and each imported row has those values.";
     return;
   }
 
-  schedule = imported;
-  state.storage.scheduleOverride = imported;
+  schedule = result.schedule;
+  state.storage.scheduleOverride = result.schedule;
   state.selectedDate = getInitialDate();
   state.selectedMonth = state.selectedDate.slice(0, 7);
   state.filterType = "All";
   state.csvImport = null;
   persistStorage();
   populateScheduleControls();
-  els.scheduleImportStatus.textContent = `Imported ${imported.length} schedule days. This schedule is now saved locally in this browser.`;
+  const skippedCopy = result.skippedRows ? ` ${result.skippedRows} row${result.skippedRows === 1 ? " was" : "s were"} skipped because required fields were missing or dates were invalid.` : "";
+  const duplicateCopy = result.duplicateDates ? ` ${result.duplicateDates} duplicate date${result.duplicateDates === 1 ? " was" : "s were"} merged by keeping the last row for that date.` : "";
+  els.scheduleImportStatus.textContent = `Imported ${result.schedule.length} schedule days.${skippedCopy}${duplicateCopy} This schedule is now saved locally in this browser.`;
   renderScheduleImportMapper();
   render();
 }
@@ -1970,25 +1984,26 @@ function guessScheduleMappings(headers) {
   };
 
   return {
-    date: findHeader([/^date$/, /studydate/, /daydate/, /plandate/, /calendar/]),
-    system: findHeader([/^system$/, /rotation/, /subject/, /discipline/, /unit/, /organ/]),
-    type: findHeader([/^type$/, /daytype/, /sessiontype/, /daykind/]),
-    contentFocus: findHeader([/contentfocus/, /focus/, /topic/, /studytopic/, /content/, /assignment/]),
-    qbankPlan: findHeader([/qbank/, /questions/, /blocks/, /questionplan/, /questionbank/, /qb/]),
-    obligations: findHeader([/obligation/, /school/, /class/, /lecture/, /meeting/, /lab/, /clinic/]),
-    notes: findHeader([/^notes?$/, /evening/, /comment/, /reminder/, /misc/]),
-    phase: findHeader([/^phase$/, /block/, /sprint/, /period/]),
-    week: findHeader([/^week$/, /weeknumber/, /weekof/]),
+    date: findHeader([/^date$/, /studydate/, /daydate/, /plandate/, /calendar/, /scheduledate/]),
+    system: findHeader([/^system$/, /rotation/, /subject/, /discipline/, /unit/, /organ/, /module/, /theme/]),
+    type: findHeader([/^type$/, /daytype/, /sessiontype/, /daykind/, /plantype/, /category/]),
+    contentFocus: findHeader([/contentfocus/, /focus/, /topic/, /studytopic/, /content/, /assignment/, /focusarea/, /chapter/]),
+    qbankPlan: findHeader([/qbank/, /questions/, /blocks/, /questionplan/, /questionbank/, /qb/, /questiontarget/]),
+    obligations: findHeader([/obligation/, /school/, /class/, /lecture/, /meeting/, /lab/, /clinic/, /responsibilit/]),
+    notes: findHeader([/^notes?$/, /evening/, /comment/, /reminder/, /misc/, /detail/, /extra/]),
+    phase: findHeader([/^phase$/, /block/, /sprint/, /period/, /stage/]),
+    week: findHeader([/^week$/, /weeknumber/, /weekof/, /studyweek/]),
   };
 }
 
 function buildImportedSchedule(csvImport) {
   const required = ["date", "system", "type", "contentFocus"];
   if (required.some((field) => !csvImport.mappings[field])) {
-    return [];
+    return { schedule: [], skippedRows: 0, duplicateDates: 0 };
   }
 
   const indexByHeader = Object.fromEntries(csvImport.headers.map((header, index) => [header, index]));
+  let skippedRows = 0;
   const rows = csvImport.rows
     .map((row) => {
       const read = (field) => {
@@ -2005,6 +2020,7 @@ function buildImportedSchedule(csvImport) {
       const type = read("type");
       const contentFocus = read("contentFocus");
       if (!date || !system || !type || !contentFocus) {
+        skippedRows += 1;
         return null;
       }
 
@@ -2022,7 +2038,12 @@ function buildImportedSchedule(csvImport) {
     })
     .filter(Boolean);
 
-  return normalizeSchedule(rows);
+  const duplicateDates = Math.max(0, rows.length - new Set(rows.map((row) => row.date)).size);
+  return {
+    schedule: normalizeSchedule(rows),
+    skippedRows,
+    duplicateDates,
+  };
 }
 
 function normalizeSchedule(rows) {
@@ -2061,7 +2082,28 @@ function loadScheduleData(fallback) {
   }
 }
 
-function parseCsv(text) {
+function parseDelimitedText(text) {
+  const candidates = [",", "\t", ";"];
+  const lines = String(text || "")
+    .split(/\r\n|\n|\r/)
+    .slice(0, 8)
+    .filter((line) => line.trim());
+  const scored = candidates
+    .map((delimiter) => ({
+      delimiter,
+      score: scoreDelimiter(lines, delimiter),
+    }))
+    .sort((a, b) => b.score - a.score);
+
+  const delimiter = scored[0]?.score > 0 ? scored[0].delimiter : ",";
+  return {
+    delimiter,
+    delimiterLabel: delimiter === "\t" ? "tab-separated" : delimiter === ";" ? "semicolon-separated" : "CSV",
+    rows: parseCsv(text, delimiter),
+  };
+}
+
+function parseCsv(text, delimiter = ",") {
   const rows = [];
   let current = "";
   let row = [];
@@ -2081,7 +2123,7 @@ function parseCsv(text) {
       continue;
     }
 
-    if (char === "," && !inQuotes) {
+    if (char === delimiter && !inQuotes) {
       row.push(current);
       current = "";
       continue;
@@ -2107,6 +2149,80 @@ function parseCsv(text) {
   }
 
   return rows;
+}
+
+function scoreDelimiter(lines, delimiter) {
+  if (!lines.length) {
+    return 0;
+  }
+
+  const counts = lines.map((line) => countDelimiterOutsideQuotes(line, delimiter)).filter((count) => count > 0);
+  if (!counts.length) {
+    return 0;
+  }
+
+  const first = counts[0];
+  const consistency = counts.filter((count) => count === first).length;
+  return first * 4 + consistency;
+}
+
+function countDelimiterOutsideQuotes(line, delimiter) {
+  let count = 0;
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+    const next = line[i + 1];
+    if (char === '"') {
+      if (inQuotes && next === '"') {
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+    if (char === delimiter && !inQuotes) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function findHeaderRowIndex(rows) {
+  let bestIndex = -1;
+  let bestScore = -1;
+
+  rows.slice(0, 12).forEach((row, index) => {
+    const score = scoreHeaderRow(row);
+    if (score > bestScore) {
+      bestScore = score;
+      bestIndex = index;
+    }
+  });
+
+  return bestScore >= 2 ? bestIndex : 0;
+}
+
+function scoreHeaderRow(row) {
+  const headerKeys = row.map((cell) => normalizeHeaderKey(cell)).filter(Boolean);
+  if (!headerKeys.length) {
+    return -1;
+  }
+
+  const weights = [
+    { patterns: [/date/, /daydate/, /studydate/], score: 3 },
+    { patterns: [/system/, /rotation/, /subject/, /discipline/, /unit/], score: 3 },
+    { patterns: [/type/, /daytype/, /sessiontype/, /category/], score: 2 },
+    { patterns: [/focus/, /topic/, /content/, /assignment/], score: 3 },
+    { patterns: [/qbank/, /questions/, /blocks/, /qb/], score: 1 },
+    { patterns: [/notes?/, /comment/, /extra/, /detail/], score: 1 },
+  ];
+
+  return weights.reduce(
+    (total, rule) => total + (headerKeys.some((key) => rule.patterns.some((pattern) => pattern.test(key))) ? rule.score : 0),
+    0
+  );
 }
 
 function normalizeHeaderKey(value) {
