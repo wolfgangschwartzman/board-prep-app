@@ -290,6 +290,101 @@ body[data-theme="midnight"] {
   --theme-chip-shell-b: rgba(24, 36, 48, 0.94);
 }
 
+body[data-theme="midnight"] .calendar-day {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--system-soft, rgba(31, 45, 60, 0.92)) 36%, var(--card-surface-a)),
+      color-mix(in srgb, var(--system-soft, rgba(24, 36, 48, 0.9)) 18%, var(--card-surface-b))
+    );
+  box-shadow:
+    inset 0 3px 0 var(--system-color, transparent),
+    0 10px 22px rgba(3, 7, 12, 0.22);
+}
+
+body[data-theme="midnight"] .calendar-day.done {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--teal) 20%, transparent), color-mix(in srgb, var(--teal) 8%, transparent)),
+    linear-gradient(180deg, color-mix(in srgb, var(--teal-soft) 18%, var(--card-surface-a)), color-mix(in srgb, var(--teal-soft) 24%, var(--card-surface-b)));
+}
+
+body[data-theme="midnight"] .day-type,
+body[data-theme="midnight"] .meta-pill,
+body[data-theme="midnight"] .topic-tag-pill,
+body[data-theme="midnight"] .badge,
+body[data-theme="midnight"] .badge.accent {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body[data-theme="midnight"] .type-light-day {
+  background: rgba(135, 168, 216, 0.18);
+  color: #bcd0f1;
+}
+
+body[data-theme="midnight"] .type-rest {
+  background: rgba(232, 237, 242, 0.08);
+  color: #c7d1da;
+}
+
+body[data-theme="midnight"] .type-school-milestone {
+  background: rgba(216, 179, 105, 0.16);
+  color: #e9cf95;
+}
+
+body[data-theme="midnight"] .command-section,
+body[data-theme="midnight"] .block-summary-card,
+body[data-theme="midnight"] .block-entry,
+body[data-theme="midnight"] .plan-item,
+body[data-theme="midnight"] .exam-row,
+body[data-theme="midnight"] .backlog-item,
+body[data-theme="midnight"] .trend-card,
+body[data-theme="midnight"] .exam-preview,
+body[data-theme="midnight"] .review-queue-item,
+body[data-theme="midnight"] .review-queue-empty,
+body[data-theme="midnight"] .countdown-card {
+  box-shadow:
+    0 12px 24px rgba(3, 7, 12, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+body[data-theme="midnight"] .block-tracker-block {
+  background: linear-gradient(180deg, rgba(37, 52, 68, 0.98), rgba(27, 40, 54, 0.94));
+}
+
+body[data-theme="midnight"] .carry-over-box {
+  background: linear-gradient(180deg, rgba(78, 65, 37, 0.9), rgba(53, 45, 28, 0.94));
+  border-color: rgba(216, 179, 105, 0.24);
+  color: var(--text);
+}
+
+body[data-theme="midnight"] .entry-form > label:not(.checkbox-row),
+body[data-theme="midnight"] .entry-form > .form-grid,
+body[data-theme="midnight"] .entry-form > .catchup-row,
+body[data-theme="midnight"] .form-grid > label {
+  background: linear-gradient(180deg, rgba(34, 48, 63, 0.96), rgba(26, 39, 51, 0.92));
+  box-shadow:
+    0 10px 22px rgba(3, 7, 12, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+body[data-theme="midnight"] .checkbox-row {
+  background: linear-gradient(135deg, rgba(88, 182, 171, 0.16), rgba(31, 45, 60, 0.98));
+}
+
+body[data-theme="midnight"] .checkbox-row:has(input:checked),
+body[data-theme="midnight"] .task-toggle.active,
+body[data-theme="midnight"] .plan-item.static.complete,
+body[data-theme="midnight"] .task-chip.active {
+  color: #dbf4ef;
+}
+
+body[data-theme="midnight"] select,
+body[data-theme="midnight"] input,
+body[data-theme="midnight"] textarea {
+  color: var(--text);
+  background: rgba(39, 54, 70, 0.98);
+}
+
 * {
   box-sizing: border-box;
 }
