@@ -425,6 +425,17 @@ body[data-theme="midnight"] .theme-chip:not(.active) {
   color: #dbe6ee;
 }
 
+body[data-theme="midnight"] .theme-choice-midnight.active {
+  background:
+    linear-gradient(180deg, rgba(24, 35, 46, 0.98), rgba(17, 26, 35, 0.96)),
+    linear-gradient(120deg, rgba(88, 182, 171, 0.1), rgba(135, 168, 216, 0.08));
+  border-color: rgba(88, 182, 171, 0.32);
+  color: #eef4f8;
+  box-shadow:
+    inset 0 0 0 1px rgba(88, 182, 171, 0.16),
+    0 10px 22px rgba(3, 7, 12, 0.24);
+}
+
 body[data-theme="midnight"] select,
 body[data-theme="midnight"] input,
 body[data-theme="midnight"] textarea {
