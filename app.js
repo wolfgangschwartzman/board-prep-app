@@ -423,8 +423,7 @@ function handleThemePickerClick(event) {
   }
   state.storage.theme = themeId;
   persistStorage();
-  applyTheme();
-  syncThemePickerUi();
+  render();
 }
 
 function applyTheme() {
