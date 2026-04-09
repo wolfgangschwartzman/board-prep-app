@@ -80,159 +80,159 @@ body[data-theme="sandstone"] {
 }
 
 body[data-theme="sage"] {
-  --bg: #edf2ea;
-  --bg-strong: #d7e2d7;
-  --surface: rgba(250, 253, 248, 0.86);
-  --surface-strong: #fbfdf8;
-  --text: #23302a;
-  --muted: #5e6d65;
-  --line: rgba(35, 48, 42, 0.11);
-  --shadow: 0 24px 50px rgba(52, 76, 60, 0.12);
-  --teal: #477b67;
-  --teal-soft: #dceddf;
-  --rust: #b26a52;
-  --rust-soft: #f1ddd5;
-  --gold: #c19a53;
-  --gold-soft: #f2e8cb;
-  --navy: #47676a;
-  --navy-soft: #dcebed;
-  --rose: #8b6674;
-  --rose-soft: #eedfe5;
-  --card-border-strong: rgba(71, 103, 106, 0.16);
-  --card-shadow-soft: 0 12px 26px rgba(48, 69, 57, 0.07);
-  --card-shadow-medium: 0 18px 36px rgba(48, 69, 57, 0.1);
-  --page-glow-a: rgba(193, 154, 83, 0.2);
-  --page-glow-b: rgba(71, 123, 103, 0.2);
-  --hero-bg-a: rgba(248, 252, 247, 0.88);
-  --hero-bg-b: rgba(241, 247, 239, 0.7);
-  --hero-accent-a: rgba(71, 123, 103, 0.1);
-  --hero-accent-b: rgba(178, 106, 82, 0.08);
-  --spotlight-bg-a: rgba(54, 84, 73, 0.96);
-  --spotlight-bg-b: rgba(39, 62, 54, 0.98);
-  --performance-bg-a: rgba(248, 252, 247, 0.94);
-  --performance-bg-b: rgba(240, 247, 239, 0.92);
-  --prompt-bg-a: rgba(250, 246, 239, 0.97);
-  --prompt-bg-b: rgba(244, 237, 228, 0.93);
-  --card-bg-a: rgba(250, 253, 248, 0.94);
-  --card-bg-b: rgba(242, 247, 241, 0.9);
-  --card-surface-a: rgba(251, 253, 248, 0.98);
-  --card-surface-b: rgba(243, 247, 241, 0.94);
-  --soft-panel-a: rgba(251, 253, 248, 0.96);
-  --soft-panel-b: rgba(242, 247, 241, 0.92);
-  --soft-panel-strong-a: rgba(250, 244, 239, 0.98);
-  --soft-panel-strong-b: rgba(244, 235, 228, 0.94);
-  --ghost-bg: rgba(248, 252, 247, 0.82);
-  --utility-bg: rgba(250, 253, 248, 0.74);
-  --field-bg: rgba(253, 255, 252, 0.92);
-  --field-bg-strong: rgba(255, 255, 254, 0.98);
-  --surface-tint: rgba(71, 103, 106, 0.12);
-  --surface-tint-strong: rgba(71, 103, 106, 0.1);
-  --theme-chip-shell-a: rgba(247, 251, 246, 0.98);
-  --theme-chip-shell-b: rgba(236, 243, 236, 0.92);
+  --bg: #dde8dc;
+  --bg-strong: #bfd1c0;
+  --surface: rgba(244, 249, 241, 0.88);
+  --surface-strong: #f8fcf4;
+  --text: #213028;
+  --muted: #52655c;
+  --line: rgba(33, 48, 40, 0.13);
+  --shadow: 0 24px 50px rgba(39, 66, 49, 0.14);
+  --teal: #2f6d4c;
+  --teal-soft: #cfe7d6;
+  --rust: #9b5b3d;
+  --rust-soft: #ecd6cb;
+  --gold: #a88438;
+  --gold-soft: #ecdfb9;
+  --navy: #38594e;
+  --navy-soft: #d4e4dc;
+  --rose: #7d5b63;
+  --rose-soft: #e8d9de;
+  --card-border-strong: rgba(47, 76, 61, 0.18);
+  --card-shadow-soft: 0 12px 26px rgba(39, 66, 49, 0.08);
+  --card-shadow-medium: 0 18px 36px rgba(39, 66, 49, 0.12);
+  --page-glow-a: rgba(168, 132, 56, 0.24);
+  --page-glow-b: rgba(47, 109, 76, 0.24);
+  --hero-bg-a: rgba(242, 248, 238, 0.92);
+  --hero-bg-b: rgba(225, 237, 225, 0.76);
+  --hero-accent-a: rgba(47, 109, 76, 0.14);
+  --hero-accent-b: rgba(155, 91, 61, 0.1);
+  --spotlight-bg-a: rgba(41, 72, 58, 0.97);
+  --spotlight-bg-b: rgba(28, 51, 41, 0.99);
+  --performance-bg-a: rgba(243, 249, 240, 0.96);
+  --performance-bg-b: rgba(230, 240, 229, 0.94);
+  --prompt-bg-a: rgba(246, 241, 230, 0.98);
+  --prompt-bg-b: rgba(236, 226, 209, 0.95);
+  --card-bg-a: rgba(244, 249, 241, 0.96);
+  --card-bg-b: rgba(232, 240, 232, 0.92);
+  --card-surface-a: rgba(248, 252, 244, 0.99);
+  --card-surface-b: rgba(235, 242, 234, 0.95);
+  --soft-panel-a: rgba(246, 251, 243, 0.97);
+  --soft-panel-b: rgba(232, 240, 232, 0.93);
+  --soft-panel-strong-a: rgba(245, 236, 224, 0.99);
+  --soft-panel-strong-b: rgba(234, 222, 206, 0.95);
+  --ghost-bg: rgba(240, 247, 238, 0.86);
+  --utility-bg: rgba(244, 249, 241, 0.8);
+  --field-bg: rgba(250, 253, 247, 0.94);
+  --field-bg-strong: rgba(252, 255, 250, 0.99);
+  --surface-tint: rgba(56, 89, 78, 0.14);
+  --surface-tint-strong: rgba(56, 89, 78, 0.11);
+  --theme-chip-shell-a: rgba(238, 246, 235, 0.99);
+  --theme-chip-shell-b: rgba(220, 234, 220, 0.94);
 }
 
 body[data-theme="coast"] {
-  --bg: #eaf3f6;
-  --bg-strong: #d4e3ea;
-  --surface: rgba(249, 253, 255, 0.86);
-  --surface-strong: #fcfeff;
-  --text: #1f2b35;
-  --muted: #5c6c7b;
-  --line: rgba(31, 43, 53, 0.12);
-  --shadow: 0 24px 50px rgba(38, 71, 96, 0.12);
-  --teal: #2f7d8c;
-  --teal-soft: #d8eef2;
-  --rust: #c26f53;
-  --rust-soft: #f4dfd6;
-  --gold: #d1a35a;
-  --gold-soft: #f7eacc;
-  --navy: #345d7e;
-  --navy-soft: #dbe8f5;
-  --rose: #8f617d;
-  --rose-soft: #f1deea;
-  --card-border-strong: rgba(52, 93, 126, 0.16);
-  --card-shadow-soft: 0 12px 26px rgba(38, 71, 96, 0.07);
-  --card-shadow-medium: 0 18px 36px rgba(38, 71, 96, 0.1);
-  --page-glow-a: rgba(209, 163, 90, 0.18);
-  --page-glow-b: rgba(47, 125, 140, 0.2);
-  --hero-bg-a: rgba(248, 252, 255, 0.88);
-  --hero-bg-b: rgba(240, 247, 250, 0.72);
-  --hero-accent-a: rgba(47, 125, 140, 0.1);
-  --hero-accent-b: rgba(194, 111, 83, 0.08);
-  --spotlight-bg-a: rgba(43, 78, 103, 0.96);
-  --spotlight-bg-b: rgba(31, 55, 76, 0.98);
-  --performance-bg-a: rgba(248, 252, 255, 0.94);
-  --performance-bg-b: rgba(239, 246, 250, 0.92);
-  --prompt-bg-a: rgba(249, 245, 239, 0.97);
-  --prompt-bg-b: rgba(243, 236, 227, 0.93);
-  --card-bg-a: rgba(249, 253, 255, 0.94);
-  --card-bg-b: rgba(241, 247, 250, 0.9);
-  --card-surface-a: rgba(252, 254, 255, 0.98);
-  --card-surface-b: rgba(242, 247, 250, 0.94);
-  --soft-panel-a: rgba(252, 254, 255, 0.96);
-  --soft-panel-b: rgba(242, 247, 250, 0.92);
-  --soft-panel-strong-a: rgba(250, 244, 239, 0.98);
-  --soft-panel-strong-b: rgba(243, 235, 227, 0.94);
-  --ghost-bg: rgba(248, 252, 255, 0.82);
-  --utility-bg: rgba(249, 253, 255, 0.74);
-  --field-bg: rgba(252, 255, 255, 0.93);
-  --field-bg-strong: rgba(255, 255, 255, 0.99);
-  --surface-tint: rgba(52, 93, 126, 0.12);
-  --surface-tint-strong: rgba(52, 93, 126, 0.1);
-  --theme-chip-shell-a: rgba(247, 252, 255, 0.98);
-  --theme-chip-shell-b: rgba(235, 244, 250, 0.92);
+  --bg: #d8e8ef;
+  --bg-strong: #b8d2de;
+  --surface: rgba(243, 250, 253, 0.9);
+  --surface-strong: #f7fdff;
+  --text: #1d2d38;
+  --muted: #516677;
+  --line: rgba(29, 45, 56, 0.13);
+  --shadow: 0 24px 50px rgba(24, 62, 86, 0.15);
+  --teal: #1f7f92;
+  --teal-soft: #c7e9ef;
+  --rust: #cf6e48;
+  --rust-soft: #f5dacd;
+  --gold: #c58d35;
+  --gold-soft: #f2e1b8;
+  --navy: #234f78;
+  --navy-soft: #d0e1f1;
+  --rose: #7f5f86;
+  --rose-soft: #e7ddef;
+  --card-border-strong: rgba(35, 79, 120, 0.18);
+  --card-shadow-soft: 0 12px 26px rgba(24, 62, 86, 0.08);
+  --card-shadow-medium: 0 18px 36px rgba(24, 62, 86, 0.12);
+  --page-glow-a: rgba(197, 141, 53, 0.22);
+  --page-glow-b: rgba(31, 127, 146, 0.24);
+  --hero-bg-a: rgba(240, 249, 252, 0.92);
+  --hero-bg-b: rgba(223, 239, 245, 0.78);
+  --hero-accent-a: rgba(31, 127, 146, 0.16);
+  --hero-accent-b: rgba(35, 79, 120, 0.1);
+  --spotlight-bg-a: rgba(28, 72, 107, 0.97);
+  --spotlight-bg-b: rgba(18, 46, 69, 0.99);
+  --performance-bg-a: rgba(241, 249, 253, 0.96);
+  --performance-bg-b: rgba(226, 239, 246, 0.94);
+  --prompt-bg-a: rgba(246, 240, 230, 0.98);
+  --prompt-bg-b: rgba(238, 228, 212, 0.95);
+  --card-bg-a: rgba(243, 250, 253, 0.96);
+  --card-bg-b: rgba(228, 240, 246, 0.92);
+  --card-surface-a: rgba(247, 252, 254, 0.99);
+  --card-surface-b: rgba(231, 242, 247, 0.95);
+  --soft-panel-a: rgba(246, 252, 254, 0.97);
+  --soft-panel-b: rgba(229, 240, 246, 0.93);
+  --soft-panel-strong-a: rgba(246, 239, 228, 0.99);
+  --soft-panel-strong-b: rgba(237, 226, 208, 0.95);
+  --ghost-bg: rgba(240, 249, 252, 0.86);
+  --utility-bg: rgba(243, 250, 253, 0.8);
+  --field-bg: rgba(249, 253, 255, 0.95);
+  --field-bg-strong: rgba(252, 255, 255, 0.99);
+  --surface-tint: rgba(35, 79, 120, 0.14);
+  --surface-tint-strong: rgba(35, 79, 120, 0.11);
+  --theme-chip-shell-a: rgba(236, 247, 251, 0.99);
+  --theme-chip-shell-b: rgba(217, 233, 241, 0.94);
 }
 
 body[data-theme="blush"] {
-  --bg: #f6ecec;
-  --bg-strong: #ead8d8;
-  --surface: rgba(255, 250, 250, 0.86);
-  --surface-strong: #fffdfd;
-  --text: #2c2430;
-  --muted: #6f616f;
-  --line: rgba(44, 36, 48, 0.12);
-  --shadow: 0 24px 50px rgba(91, 58, 71, 0.12);
-  --teal: #5b8c86;
-  --teal-soft: #dcefea;
-  --rust: #c06b69;
-  --rust-soft: #f5dedd;
-  --gold: #cb9b64;
-  --gold-soft: #f5e7d5;
-  --navy: #695778;
-  --navy-soft: #e4ddf0;
-  --rose: #a45f78;
-  --rose-soft: #f3dde6;
-  --card-border-strong: rgba(105, 87, 120, 0.16);
-  --card-shadow-soft: 0 12px 26px rgba(91, 58, 71, 0.07);
-  --card-shadow-medium: 0 18px 36px rgba(91, 58, 71, 0.1);
-  --page-glow-a: rgba(203, 155, 100, 0.18);
-  --page-glow-b: rgba(164, 95, 120, 0.18);
-  --hero-bg-a: rgba(255, 250, 251, 0.88);
-  --hero-bg-b: rgba(248, 241, 244, 0.72);
-  --hero-accent-a: rgba(164, 95, 120, 0.1);
-  --hero-accent-b: rgba(91, 140, 134, 0.08);
-  --spotlight-bg-a: rgba(92, 67, 106, 0.96);
-  --spotlight-bg-b: rgba(63, 47, 74, 0.98);
-  --performance-bg-a: rgba(255, 250, 251, 0.94);
-  --performance-bg-b: rgba(246, 239, 243, 0.92);
-  --prompt-bg-a: rgba(252, 244, 244, 0.97);
-  --prompt-bg-b: rgba(244, 234, 232, 0.93);
-  --card-bg-a: rgba(255, 250, 250, 0.94);
-  --card-bg-b: rgba(246, 239, 243, 0.9);
-  --card-surface-a: rgba(255, 252, 252, 0.98);
-  --card-surface-b: rgba(247, 239, 243, 0.94);
-  --soft-panel-a: rgba(255, 252, 252, 0.96);
-  --soft-panel-b: rgba(247, 239, 243, 0.92);
-  --soft-panel-strong-a: rgba(252, 244, 244, 0.98);
-  --soft-panel-strong-b: rgba(244, 233, 231, 0.94);
-  --ghost-bg: rgba(255, 250, 251, 0.82);
-  --utility-bg: rgba(255, 252, 252, 0.74);
-  --field-bg: rgba(255, 254, 254, 0.93);
-  --field-bg-strong: rgba(255, 255, 255, 0.99);
-  --surface-tint: rgba(105, 87, 120, 0.12);
-  --surface-tint-strong: rgba(105, 87, 120, 0.1);
-  --theme-chip-shell-a: rgba(255, 248, 250, 0.98);
-  --theme-chip-shell-b: rgba(246, 236, 241, 0.92);
+  --bg: #f0dfe5;
+  --bg-strong: #e0c2cf;
+  --surface: rgba(255, 246, 250, 0.9);
+  --surface-strong: #fffafd;
+  --text: #31232d;
+  --muted: #735d69;
+  --line: rgba(49, 35, 45, 0.13);
+  --shadow: 0 24px 50px rgba(104, 54, 82, 0.15);
+  --teal: #5c8b86;
+  --teal-soft: #d8ece8;
+  --rust: #c86460;
+  --rust-soft: #f3d3d1;
+  --gold: #c58b54;
+  --gold-soft: #f3dfc8;
+  --navy: #6c4d74;
+  --navy-soft: #e5d8ec;
+  --rose: #b14f77;
+  --rose-soft: #f1d3df;
+  --card-border-strong: rgba(108, 77, 116, 0.18);
+  --card-shadow-soft: 0 12px 26px rgba(104, 54, 82, 0.08);
+  --card-shadow-medium: 0 18px 36px rgba(104, 54, 82, 0.12);
+  --page-glow-a: rgba(197, 139, 84, 0.22);
+  --page-glow-b: rgba(177, 79, 119, 0.22);
+  --hero-bg-a: rgba(255, 246, 250, 0.93);
+  --hero-bg-b: rgba(244, 228, 237, 0.8);
+  --hero-accent-a: rgba(177, 79, 119, 0.14);
+  --hero-accent-b: rgba(92, 139, 134, 0.1);
+  --spotlight-bg-a: rgba(96, 55, 92, 0.97);
+  --spotlight-bg-b: rgba(67, 38, 67, 0.99);
+  --performance-bg-a: rgba(255, 247, 251, 0.96);
+  --performance-bg-b: rgba(244, 230, 239, 0.94);
+  --prompt-bg-a: rgba(252, 239, 240, 0.98);
+  --prompt-bg-b: rgba(244, 225, 222, 0.95);
+  --card-bg-a: rgba(255, 247, 251, 0.96);
+  --card-bg-b: rgba(243, 229, 238, 0.92);
+  --card-surface-a: rgba(255, 250, 252, 0.99);
+  --card-surface-b: rgba(245, 233, 241, 0.95);
+  --soft-panel-a: rgba(255, 249, 252, 0.97);
+  --soft-panel-b: rgba(243, 230, 238, 0.93);
+  --soft-panel-strong-a: rgba(252, 237, 239, 0.99);
+  --soft-panel-strong-b: rgba(243, 223, 221, 0.95);
+  --ghost-bg: rgba(255, 246, 250, 0.86);
+  --utility-bg: rgba(255, 249, 252, 0.8);
+  --field-bg: rgba(255, 251, 253, 0.95);
+  --field-bg-strong: rgba(255, 254, 255, 0.99);
+  --surface-tint: rgba(108, 77, 116, 0.14);
+  --surface-tint-strong: rgba(108, 77, 116, 0.11);
+  --theme-chip-shell-a: rgba(255, 241, 247, 0.99);
+  --theme-chip-shell-b: rgba(243, 223, 234, 0.94);
 }
 
 body[data-theme="midnight"] {
@@ -1936,20 +1936,20 @@ textarea {
 
 .theme-choice-sage {
   background:
-    linear-gradient(180deg, rgba(247, 251, 246, 0.98), rgba(236, 243, 236, 0.92)),
-    linear-gradient(120deg, rgba(71, 123, 103, 0.1), rgba(178, 106, 82, 0.08));
+    linear-gradient(180deg, rgba(238, 246, 235, 0.99), rgba(220, 234, 220, 0.94)),
+    linear-gradient(120deg, rgba(47, 109, 76, 0.14), rgba(155, 91, 61, 0.1));
 }
 
 .theme-choice-coast {
   background:
-    linear-gradient(180deg, rgba(247, 252, 255, 0.98), rgba(235, 244, 250, 0.92)),
-    linear-gradient(120deg, rgba(47, 125, 140, 0.1), rgba(52, 93, 126, 0.08));
+    linear-gradient(180deg, rgba(236, 247, 251, 0.99), rgba(217, 233, 241, 0.94)),
+    linear-gradient(120deg, rgba(31, 127, 146, 0.16), rgba(35, 79, 120, 0.12));
 }
 
 .theme-choice-blush {
   background:
-    linear-gradient(180deg, rgba(255, 248, 250, 0.98), rgba(246, 236, 241, 0.92)),
-    linear-gradient(120deg, rgba(164, 95, 120, 0.1), rgba(91, 140, 134, 0.08));
+    linear-gradient(180deg, rgba(255, 241, 247, 0.99), rgba(243, 223, 234, 0.94)),
+    linear-gradient(120deg, rgba(177, 79, 119, 0.16), rgba(92, 139, 134, 0.1));
 }
 
 .theme-choice-midnight {
