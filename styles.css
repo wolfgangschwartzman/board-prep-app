@@ -1943,10 +1943,10 @@ textarea {
 
 .theme-choice-midnight {
   background:
-    linear-gradient(180deg, rgba(31, 45, 60, 0.98), rgba(24, 36, 48, 0.94)),
-    linear-gradient(120deg, rgba(88, 182, 171, 0.14), rgba(135, 168, 216, 0.1));
+    linear-gradient(180deg, rgba(27, 39, 52, 0.98), rgba(19, 29, 39, 0.96)),
+    linear-gradient(120deg, rgba(88, 182, 171, 0.08), rgba(135, 168, 216, 0.06));
   color: #eef4f8;
-  box-shadow: 0 10px 22px rgba(3, 7, 12, 0.22);
+  box-shadow: 0 8px 18px rgba(3, 7, 12, 0.16);
 }
 
 .theme-choice-midnight.active {
