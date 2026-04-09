@@ -308,6 +308,30 @@ body[data-theme="midnight"] .calendar-day.done {
     linear-gradient(180deg, color-mix(in srgb, var(--teal-soft) 18%, var(--card-surface-a)), color-mix(in srgb, var(--teal-soft) 24%, var(--card-surface-b)));
 }
 
+body[data-theme="midnight"] .coverage-item {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--system-soft, rgba(31, 45, 60, 0.92)) 26%, var(--card-surface-a)),
+    color-mix(in srgb, var(--system-soft, rgba(24, 36, 48, 0.9)) 12%, var(--card-surface-b))
+  );
+  border-color: color-mix(in srgb, var(--system-color, var(--card-border-strong)) 26%, transparent);
+  box-shadow: inset 4px 0 0 var(--system-color, transparent);
+}
+
+body[data-theme="midnight"] .coverage-item.current {
+  box-shadow:
+    inset 5px 0 0 var(--system-color, transparent),
+    0 10px 24px color-mix(in srgb, var(--system-color, rgba(88, 182, 171, 0.24)) 22%, transparent);
+}
+
+body[data-theme="midnight"] .coverage-more {
+  border-top-color: rgba(232, 237, 242, 0.08);
+}
+
+body[data-theme="midnight"] .coverage-more summary {
+  color: #b8cae5;
+}
+
 body[data-theme="midnight"] .day-type,
 body[data-theme="midnight"] .meta-pill,
 body[data-theme="midnight"] .topic-tag-pill,
@@ -376,6 +400,29 @@ body[data-theme="midnight"] .task-toggle.active,
 body[data-theme="midnight"] .plan-item.static.complete,
 body[data-theme="midnight"] .task-chip.active {
   color: #dbf4ef;
+}
+
+body[data-theme="midnight"] .task-chip {
+  border-color: rgba(232, 237, 242, 0.1);
+  background: rgba(35, 49, 64, 0.96);
+  color: #d9e3ec;
+}
+
+body[data-theme="midnight"] .task-chip-check {
+  background: rgba(24, 36, 48, 0.96);
+  border-color: rgba(232, 237, 242, 0.12);
+}
+
+body[data-theme="midnight"] .theme-chip {
+  border-color: rgba(232, 237, 242, 0.1);
+  box-shadow: 0 10px 22px rgba(3, 7, 12, 0.18);
+}
+
+body[data-theme="midnight"] .theme-chip:not(.active) {
+  background:
+    linear-gradient(180deg, rgba(33, 47, 62, 0.98), rgba(24, 36, 48, 0.94)),
+    linear-gradient(120deg, rgba(88, 182, 171, 0.08), rgba(135, 168, 216, 0.06));
+  color: #dbe6ee;
 }
 
 body[data-theme="midnight"] select,
