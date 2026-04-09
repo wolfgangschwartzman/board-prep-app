@@ -391,7 +391,7 @@ function renderThemePicker() {
       (theme) => `
         <button
           type="button"
-          class="theme-chip"
+          class="theme-chip theme-choice-${escapeHtml(theme.id)}"
           data-theme-id="${escapeHtml(theme.id)}"
           aria-label="${escapeHtml(theme.label)} palette"
         >
