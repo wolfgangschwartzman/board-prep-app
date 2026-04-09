@@ -10,6 +10,7 @@ const state = {
   topicsCollapsed: true,
   reviewPromptIndex: 0,
   csvImport: null,
+  planEditor: null,
   storage: loadStorage(),
 };
 
@@ -285,6 +286,7 @@ function bindEvents() {
 
   els.jumpToTodayBtn.addEventListener("click", () => {
     const today = getInitialDate();
+    state.planEditor = null;
     state.selectedDate = today;
     state.selectedMonth = today.slice(0, 7);
     render();
@@ -321,6 +323,7 @@ function bindEvents() {
   els.blockTrackerList.addEventListener("change", handleBlockTrackerChange);
   els.blockTrackerList.addEventListener("click", handleBlockTrackerClick);
   els.detailPlan.addEventListener("click", handleTaskToggleClick);
+  els.detailPlan.addEventListener("keydown", handlePlanEditorKeydown);
   els.addCustomTaskBtn.addEventListener("click", addCustomTask);
   els.customTaskInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -640,6 +643,7 @@ function renderCalendar() {
       if (button.hasAttribute("disabled")) {
         return;
       }
+      state.planEditor = null;
       state.selectedDate = button.dataset.date;
       state.selectedMonth = state.selectedDate.slice(0, 7);
       render();
@@ -675,27 +679,35 @@ function renderDetail() {
   }
 
   els.detailPlan.innerHTML = [
-    { title: "Obligations", body: day.obligations || "No fixed school obligations" },
-    { title: "Qbank Plan", body: day.qbankPlan },
-    { title: "Content Focus", body: getContentFocusText(day) },
-    { title: "Evening Notes", body: day.notes || "No preset evening block" },
+    {
+      title: "Obligations",
+      body: day.obligations || "No fixed school obligations",
+      field: "obligations",
+      defaultValue: "No fixed school obligations",
+    },
+    {
+      title: "Qbank Plan",
+      body: day.qbankPlan,
+      field: "qbankPlan",
+      defaultValue: "",
+    },
+    {
+      title: "Content Focus",
+      body: getContentFocusText(day),
+      field: "contentFocus",
+      defaultValue: "",
+    },
+    {
+      title: "Evening Notes",
+      body: day.notes || "No preset evening block",
+      field: "notes",
+      defaultValue: "No preset evening block",
+    },
   ]
     .map((item) =>
       item.title === "Qbank Plan"
         ? renderQbankPlanItem(item, entry, day.date)
-        : `
-        <button
-          type="button"
-          class="plan-item task-toggle ${isTaskComplete(entry, item.title) ? "active" : ""}"
-          data-task-title="${escapeHtml(item.title)}"
-        >
-          <div class="task-toggle-top">
-            <strong>${escapeHtml(item.title)}</strong>
-            <span class="task-check">${isTaskComplete(entry, item.title) ? "✓" : ""}</span>
-          </div>
-          <div class="preserve-breaks">${escapeHtml(item.body)}</div>
-        </button>
-      `
+        : renderEditablePlanItem(item, entry)
     )
     .join("") + renderCustomTaskItems(entry);
 
@@ -1609,6 +1621,30 @@ function handleBlockTrackerClick(event) {
 }
 
 function handleTaskToggleClick(event) {
+  const editButton = event.target.closest('[data-action="edit-plan-field"]');
+  if (editButton) {
+    state.planEditor = {
+      type: editButton.dataset.editorType || "field",
+      field: editButton.dataset.field || "",
+      taskId: editButton.dataset.taskId || "",
+    };
+    renderDetail();
+    return;
+  }
+
+  const cancelButton = event.target.closest('[data-action="cancel-plan-edit"]');
+  if (cancelButton) {
+    state.planEditor = null;
+    renderDetail();
+    return;
+  }
+
+  const saveButton = event.target.closest('[data-action="save-plan-edit"]');
+  if (saveButton) {
+    savePlanEdit(saveButton);
+    return;
+  }
+
   const removeButton = event.target.closest('[data-action="remove-custom-task"]');
   if (removeButton) {
     const taskId = removeButton.dataset.taskId;
@@ -1636,6 +1672,27 @@ function handleTaskToggleClick(event) {
   };
   persistStorage();
   renderDetail();
+}
+
+function handlePlanEditorKeydown(event) {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) {
+    return;
+  }
+
+  if (event.key === "Escape") {
+    state.planEditor = null;
+    renderDetail();
+    return;
+  }
+
+  if (event.key === "Enter" && !(target instanceof HTMLTextAreaElement && !event.metaKey && !event.ctrlKey)) {
+    const saveButton = target.closest(".plan-item")?.querySelector('[data-action="save-plan-edit"]');
+    if (saveButton instanceof HTMLElement) {
+      event.preventDefault();
+      savePlanEdit(saveButton);
+    }
+  }
 }
 
 function addCustomTask() {
@@ -1674,6 +1731,70 @@ function removeCustomTask(taskId) {
   };
   persistStorage();
   renderDetail();
+}
+
+function savePlanEdit(source) {
+  const field = source.dataset.field || "";
+  const editorType = source.dataset.editorType || "field";
+  if (editorType === "custom-task") {
+    const taskId = source.dataset.taskId || "";
+    const input = els.detailPlan.querySelector(`[data-plan-editor-input="${escapeAttribute(taskId)}"]`);
+    if (!(input instanceof HTMLInputElement) || !taskId) {
+      return;
+    }
+    updateCustomTaskText(taskId, input.value);
+    state.planEditor = null;
+    renderDetail();
+    return;
+  }
+
+  const input = els.detailPlan.querySelector(`[data-plan-editor-input="${escapeAttribute(field)}"]`);
+  if (!(input instanceof HTMLTextAreaElement) || !field) {
+    return;
+  }
+  updatePlanField(field, input.value);
+  state.planEditor = null;
+  renderDetail();
+}
+
+function updatePlanField(field, value) {
+  const date = state.selectedDate;
+  const overrides = { ...(state.storage.scheduleEdits || {}) };
+  const dayOverride = { ...(overrides[date] || {}) };
+  const baseDay = schedule.find((item) => item.date === date) || {};
+  const normalizedValue = String(value || "").trim();
+  const baseValue =
+    field === "contentFocus" ? String(baseDay.contentFocus || "").trim() : String(baseDay[field] || "").trim();
+
+  if (!normalizedValue || normalizedValue === baseValue) {
+    delete dayOverride[field];
+  } else {
+    dayOverride[field] = normalizedValue;
+  }
+
+  if (Object.keys(dayOverride).length) {
+    overrides[date] = dayOverride;
+  } else {
+    delete overrides[date];
+  }
+
+  state.storage.scheduleEdits = overrides;
+  persistStorage();
+}
+
+function updateCustomTaskText(taskId, value) {
+  const date = state.selectedDate;
+  const existing = getEntry(date);
+  const nextText = String(value || "").trim();
+  const customTasks = [...(existing.customTasks || [])].map((task) =>
+    task.id === taskId ? { ...task, text: nextText || task.text } : task
+  );
+
+  state.storage.entries[date] = {
+    ...existing,
+    customTasks,
+  };
+  persistStorage();
 }
 
 function handleExamTrackerChange(event) {
@@ -2266,6 +2387,7 @@ function sanitizeImportedStorage(storage) {
     customExams: storage.customExams || [],
     hiddenExams: storage.hiddenExams || [],
     tagReviewLog: storage.tagReviewLog || {},
+    scheduleEdits: storage.scheduleEdits || {},
     scheduleOverride: storage.scheduleOverride?.length ? normalizeSchedule(storage.scheduleOverride) : [],
   };
 }
@@ -2386,7 +2508,12 @@ function renderTopicTags(tags) {
 }
 
 function getDay(date) {
-  return schedule.find((item) => item.date === date) || schedule[0];
+  const baseDay = schedule.find((item) => item.date === date) || schedule[0];
+  const edit = state.storage.scheduleEdits?.[baseDay.date] || {};
+  return {
+    ...baseDay,
+    ...edit,
+  };
 }
 
 function getDaysBetween(fromDate, toDate) {
@@ -2509,20 +2636,37 @@ function typeClass(type) {
 }
 
 function renderQbankPlanItem(item, entry, date) {
+  if (isEditingPlanField(item.field)) {
+    return renderPlanFieldEditor(item);
+  }
+
   const blocks = parseQbankBlocks(item.body, date);
   if (!blocks.length) {
     return `
-      <button
-        type="button"
-        class="plan-item task-toggle ${isTaskComplete(entry, item.title) ? "active" : ""}"
-        data-task-title="${escapeHtml(item.title)}"
-      >
+      <div class="plan-item task-toggle ${isTaskComplete(entry, item.title) ? "active" : ""}">
         <div class="task-toggle-top">
           <strong>${escapeHtml(item.title)}</strong>
-          <span class="task-check">${isTaskComplete(entry, item.title) ? "✓" : ""}</span>
+          <div class="task-toggle-actions">
+            <button
+              type="button"
+              class="mini-btn subtle-edit-btn"
+              data-action="edit-plan-field"
+              data-field="${escapeHtml(item.field)}"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              class="task-check-button"
+              data-task-title="${escapeHtml(item.title)}"
+              aria-label="Mark ${escapeHtml(item.title)} complete"
+            >
+              <span class="task-check">${isTaskComplete(entry, item.title) ? "✓" : ""}</span>
+            </button>
+          </div>
         </div>
         <div>${escapeHtml(item.body)}</div>
-      </button>
+      </div>
     `;
   }
 
@@ -2532,7 +2676,17 @@ function renderQbankPlanItem(item, entry, date) {
     <div class="plan-item static ${allComplete ? "complete" : ""}">
       <div class="task-toggle-top">
         <strong>${escapeHtml(item.title)}</strong>
-        <span class="task-check">${allComplete ? "✓" : ""}</span>
+        <div class="task-toggle-actions">
+          <button
+            type="button"
+            class="mini-btn subtle-edit-btn"
+            data-action="edit-plan-field"
+            data-field="${escapeHtml(item.field)}"
+          >
+            Edit
+          </button>
+          <span class="task-check">${allComplete ? "✓" : ""}</span>
+        </div>
       </div>
       <div class="task-chip-row">
         ${blocks
@@ -2567,18 +2721,65 @@ function renderCustomTaskItems(entry) {
     .map((task) => {
       const taskTitle = `Custom Task::${task.id}`;
       const active = isTaskComplete(entry, taskTitle);
+      if (isEditingCustomTask(task.id)) {
+        return `
+          <div class="plan-item custom-task-item editor">
+            <div class="task-toggle-top">
+              <strong>Custom Task</strong>
+              <div class="task-toggle-actions">
+                <button
+                  type="button"
+                  class="mini-btn subtle-edit-btn"
+                  data-action="cancel-plan-edit"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  class="mini-btn"
+                  data-action="save-plan-edit"
+                  data-editor-type="custom-task"
+                  data-task-id="${escapeHtml(task.id)}"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+            <input
+              type="text"
+              data-plan-editor-input="${escapeHtml(task.id)}"
+              value="${escapeHtml(task.text)}"
+              placeholder="Custom task"
+            />
+          </div>
+        `;
+      }
       return `
-        <button
-          type="button"
-          class="plan-item task-toggle custom-task-item ${active ? "active" : ""}"
-          data-task-title="${escapeHtml(taskTitle)}"
-        >
+        <div class="plan-item task-toggle custom-task-item ${active ? "active" : ""}">
           <div class="task-toggle-top">
             <strong>Custom Task</strong>
-            <span class="task-check">${active ? "✓" : ""}</span>
+            <div class="task-toggle-actions">
+              <button
+                type="button"
+                class="mini-btn subtle-edit-btn"
+                data-action="edit-plan-field"
+                data-editor-type="custom-task"
+                data-task-id="${escapeHtml(task.id)}"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                class="task-check-button"
+                data-task-title="${escapeHtml(taskTitle)}"
+                aria-label="Mark custom task complete"
+              >
+                <span class="task-check">${active ? "✓" : ""}</span>
+              </button>
+            </div>
           </div>
           <div class="custom-task-body">
-            <span>${escapeHtml(task.text)}</span>
+            <span data-task-title="${escapeHtml(taskTitle)}">${escapeHtml(task.text)}</span>
             <span
               class="mini-btn remove-task-btn"
               data-action="remove-custom-task"
@@ -2589,10 +2790,87 @@ function renderCustomTaskItems(entry) {
               Remove
             </span>
           </div>
-        </button>
+        </div>
       `;
     })
     .join("");
+}
+
+function renderEditablePlanItem(item, entry) {
+  if (isEditingPlanField(item.field)) {
+    return renderPlanFieldEditor(item);
+  }
+
+  return `
+    <div class="plan-item task-toggle ${isTaskComplete(entry, item.title) ? "active" : ""}">
+      <div class="task-toggle-top">
+        <strong>${escapeHtml(item.title)}</strong>
+        <div class="task-toggle-actions">
+          <button
+            type="button"
+            class="mini-btn subtle-edit-btn"
+            data-action="edit-plan-field"
+            data-field="${escapeHtml(item.field)}"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            class="task-check-button"
+            data-task-title="${escapeHtml(item.title)}"
+            aria-label="Mark ${escapeHtml(item.title)} complete"
+          >
+            <span class="task-check">${isTaskComplete(entry, item.title) ? "✓" : ""}</span>
+          </button>
+        </div>
+      </div>
+      <div class="preserve-breaks" data-task-title="${escapeHtml(item.title)}">${escapeHtml(item.body)}</div>
+    </div>
+  `;
+}
+
+function renderPlanFieldEditor(item) {
+  const day = getDay(state.selectedDate);
+  const rawValue =
+    item.field === "contentFocus" ? String(day.contentFocus || "").trim() : String(day[item.field] || "").trim();
+
+  return `
+    <div class="plan-item editor">
+      <div class="task-toggle-top">
+        <strong>${escapeHtml(item.title)}</strong>
+        <div class="task-toggle-actions">
+          <button
+            type="button"
+            class="mini-btn subtle-edit-btn"
+            data-action="cancel-plan-edit"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="mini-btn"
+            data-action="save-plan-edit"
+            data-field="${escapeHtml(item.field)}"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+      <textarea
+        rows="${item.field === "contentFocus" ? 4 : 3}"
+        data-plan-editor-input="${escapeHtml(item.field)}"
+        placeholder="${escapeHtml(item.defaultValue || "")}"
+      >${escapeHtml(rawValue)}</textarea>
+    </div>
+  `;
+}
+
+function isEditingPlanField(field) {
+  return Boolean(state.planEditor && state.planEditor.type === "field" && state.planEditor.field === field);
+}
+
+function isEditingCustomTask(taskId) {
+  return Boolean(state.planEditor && state.planEditor.type === "custom-task" && state.planEditor.taskId === taskId);
 }
 
 function getCalendarHeatQuestions(entry) {
@@ -2753,4 +3031,10 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function escapeAttribute(value) {
+  return String(value ?? "")
+    .replaceAll("\\", "\\\\")
+    .replaceAll('"', '\\"');
 }

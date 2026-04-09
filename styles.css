@@ -1178,6 +1178,13 @@ button {
   align-items: center;
 }
 
+.task-toggle-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
 .task-check {
   width: 26px;
   height: 26px;
@@ -1194,6 +1201,20 @@ button {
   background: var(--teal);
   border-color: var(--teal);
   color: white;
+}
+
+.task-check-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+}
+
+.subtle-edit-btn {
+  border-color: rgba(50, 80, 107, 0.16);
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--muted);
 }
 
 .plan-item.static {
@@ -1225,6 +1246,19 @@ button {
 
 .custom-task-composer label {
   margin: 0;
+}
+
+.plan-item.editor {
+  cursor: default;
+}
+
+.plan-item.editor:hover {
+  transform: none;
+}
+
+.plan-item.editor textarea,
+.plan-item.editor input {
+  margin-top: 10px;
 }
 
 .custom-task-body {
