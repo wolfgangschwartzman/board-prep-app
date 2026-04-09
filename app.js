@@ -35,6 +35,14 @@ const examTargets = [
   { id: "step", label: "USMLE Step 1", date: "2026-06-20" },
 ];
 
+const themeOptions = [
+  { id: "sandstone", label: "Sandstone" },
+  { id: "sage", label: "Sage" },
+  { id: "coast", label: "Coast" },
+  { id: "blush", label: "Blush" },
+  { id: "midnight", label: "Midnight" },
+];
+
 const systemPalette = {
   "OMM-heavy": { color: "#8b5e3c", soft: "#efe2d1" },
   "Psych/Derm/Heme Onc": { color: "#a4475f", soft: "#f6dbe3" },
@@ -218,6 +226,7 @@ const els = {
   applyScheduleImportBtn: document.getElementById("applyScheduleImportBtn"),
   resetScheduleBtn: document.getElementById("resetScheduleBtn"),
   backupStatus: document.getElementById("backupStatus"),
+  themePicker: document.getElementById("themePicker"),
 };
 
 init();
@@ -225,6 +234,8 @@ init();
 function init() {
   state.selectedMonth = state.selectedDate.slice(0, 7);
   populateScheduleControls();
+  renderThemePicker();
+  applyTheme();
   bindEvents();
   syncScheduleImportUi();
   render();
@@ -342,16 +353,19 @@ function bindEvents() {
   els.scheduleCsvInput.addEventListener("change", handleScheduleCsvSelect);
   els.applyScheduleImportBtn.addEventListener("click", applyScheduleImport);
   els.resetScheduleBtn.addEventListener("click", resetToBuiltInSchedule);
+  els.themePicker.addEventListener("click", handleThemePickerClick);
   els.pasteTlBtn.addEventListener("click", () => importPastedReport("TrueLearn"));
   els.pasteUwBtn.addEventListener("click", () => importPastedReport("UWorld"));
 }
 
 function render() {
+  applyTheme();
   els.monthSelect.value = state.selectedMonth;
   if (![...els.typeFilter.options].some((option) => option.value === state.filterType)) {
     state.filterType = "All";
   }
   els.typeFilter.value = state.filterType;
+  syncThemePickerUi();
   syncCalendarLayout();
   syncExamLayout();
   syncTopicsLayout();
@@ -366,6 +380,55 @@ function render() {
   renderDetail();
   renderExams();
   renderBacklog();
+}
+
+function renderThemePicker() {
+  if (!els.themePicker) {
+    return;
+  }
+  els.themePicker.innerHTML = themeOptions
+    .map(
+      (theme) => `
+        <button
+          type="button"
+          class="theme-chip"
+          data-theme-id="${escapeHtml(theme.id)}"
+          aria-label="${escapeHtml(theme.label)} palette"
+        >
+          <span class="theme-chip-swatches theme-${escapeHtml(theme.id)}">
+            <span></span><span></span><span></span>
+          </span>
+          <span>${escapeHtml(theme.label)}</span>
+        </button>
+      `
+    )
+    .join("");
+}
+
+function syncThemePickerUi() {
+  const activeTheme = state.storage.theme || "sandstone";
+  els.themePicker?.querySelectorAll("[data-theme-id]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.themeId === activeTheme);
+  });
+}
+
+function handleThemePickerClick(event) {
+  const button = event.target.closest("[data-theme-id]");
+  if (!(button instanceof HTMLElement)) {
+    return;
+  }
+  const themeId = button.dataset.themeId;
+  if (!themeOptions.some((theme) => theme.id === themeId)) {
+    return;
+  }
+  state.storage.theme = themeId;
+  persistStorage();
+  applyTheme();
+  syncThemePickerUi();
+}
+
+function applyTheme() {
+  document.body.dataset.theme = state.storage.theme || "sandstone";
 }
 
 function syncScheduleImportUi() {
@@ -2387,6 +2450,7 @@ function sanitizeImportedStorage(storage) {
     customExams: storage.customExams || [],
     hiddenExams: storage.hiddenExams || [],
     tagReviewLog: storage.tagReviewLog || {},
+    theme: storage.theme || "sandstone",
     scheduleEdits: storage.scheduleEdits || {},
     scheduleOverride: storage.scheduleOverride?.length ? normalizeSchedule(storage.scheduleOverride) : [],
   };
