@@ -1434,12 +1434,13 @@ function getBacklogItems() {
 
 function renderReviewQueue(backlog) {
   const queue = buildReviewQueue(backlog);
-  const reviewedToday = queue.filter((item) => item.reviewedToday);
   const dueQueue = queue.filter((item) => item.due);
-  const currentItem = dueQueue[0] || (reviewedToday.length === 0 ? queue[0] || null : null);
+  const actionableQueue = queue.filter((item) => item.due || item.reviewedToday);
+  const reviewedToday = actionableQueue.filter((item) => item.reviewedToday);
+  const showingFallback = dueQueue.length === 0 && reviewedToday.length === 0 && queue.length > 0;
+  const currentItem = dueQueue[0] || (showingFallback ? queue[0] : null);
   const completedToday = reviewedToday.length;
-  const totalToday = queue.length;
-  const showingFallback = Boolean(currentItem && !currentItem.due);
+  const totalToday = actionableQueue.length || (showingFallback ? 1 : 0);
 
   if (!totalToday) {
     els.reviewQueue.innerHTML = `
