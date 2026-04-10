@@ -1393,10 +1393,11 @@ function renderExamPreview(exams) {
 
 function renderBacklog() {
   const backlog = getBacklogItems();
+  const reviewPrompt = getStableReviewPrompt(backlog);
 
   renderReviewQueue(backlog);
-  renderTopicsPreview(backlog);
-  renderReviewPrompt(backlog);
+  renderTopicsPreview(reviewPrompt);
+  renderReviewPrompt(reviewPrompt);
   renderTopicTagSummary(backlog);
 
   if (!backlog.length) {
@@ -1657,8 +1658,21 @@ function getReviewPromptCandidates(backlog) {
   return ordered;
 }
 
-function renderTopicsPreview(backlog) {
-  const pick = getReviewPromptCandidate(backlog);
+function getStableReviewPrompt(backlog) {
+  const candidates = getReviewPromptCandidates(backlog);
+  if (!candidates.length) {
+    state.reviewPromptIndex = 0;
+    return { pick: null, candidates };
+  }
+  state.reviewPromptIndex %= candidates.length;
+  return {
+    pick: candidates[state.reviewPromptIndex],
+    candidates,
+  };
+}
+
+function renderTopicsPreview(reviewPrompt) {
+  const pick = reviewPrompt?.pick || null;
 
   if (!pick) {
     els.topicsPreview.innerHTML = `
@@ -1677,9 +1691,9 @@ function renderTopicsPreview(backlog) {
   `;
 }
 
-function renderReviewPrompt(backlog) {
-  const pick = getReviewPromptCandidate(backlog);
-  const candidates = getReviewPromptCandidates(backlog);
+function renderReviewPrompt(reviewPrompt) {
+  const pick = reviewPrompt?.pick || null;
+  const candidates = reviewPrompt?.candidates || [];
   els.nextReviewPromptBtn.disabled = candidates.length <= 1;
 
   if (!pick) {
