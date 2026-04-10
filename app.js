@@ -422,6 +422,7 @@ function bindEvents() {
   els.examList.addEventListener("click", handleExamTrackerClick);
   els.reviewQueue.addEventListener("click", handleReviewQueueClick);
   els.trendCharts.addEventListener("mouseover", handleTrendPointHover);
+  els.trendCharts.addEventListener("mousemove", handleTrendPointMove);
   els.trendCharts.addEventListener("mouseout", handleTrendPointLeave);
   els.exportBackupBtn.addEventListener("click", exportBackup);
   els.importBackupBtn.addEventListener("click", () => els.importBackupInput.click());
@@ -1133,16 +1134,24 @@ function handleTrendPointLeave(event) {
   if (!(target instanceof Element)) {
     return;
   }
-  const related = event.relatedTarget;
-  if (related instanceof Node && target.closest(".trend-card")?.contains(related)) {
-    return;
-  }
   const card = target.closest(".trend-card");
   const detail = card?.querySelector(".trend-hover-detail");
   if (!(detail instanceof HTMLElement)) {
     return;
   }
   detail.textContent = detail.dataset.defaultText || "Hover a point for details";
+}
+
+function handleTrendPointMove(event) {
+  const target = event.target.closest("[data-tooltip]");
+  if (target instanceof Element) {
+    return;
+  }
+  els.trendCharts.querySelectorAll(".trend-hover-detail").forEach((detail) => {
+    if (detail instanceof HTMLElement) {
+      detail.textContent = detail.dataset.defaultText || "Hover a point for details";
+    }
+  });
 }
 
 function renderExamPreview(exams) {
