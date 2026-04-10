@@ -165,6 +165,81 @@ const firstAidReferencesByDate = {
   "2026-06-20": "Step 1",
 };
 
+const boardsAndBeyondReferencesByDate = {
+  "2026-04-09": "Coagulation disorders, platelet disorders, leukemias, lymphomas",
+  "2026-04-10": "Mood disorders, anxiety, psych pharm basics, papulosquamous disorders, blistering disorders, anemia overview",
+  "2026-04-11": "None before exam; after review only rewatch misses",
+  "2026-04-12": "Only videos tied to UWSA misses",
+  "2026-04-13": "Chemo toxicities, transfusion reactions, antidepressants/antipsychotics, high-yield derm review",
+  "2026-04-14": "Enzyme kinetics, glycogen metabolism, glycolysis/gluconeogenesis, TCA, ETC",
+  "2026-04-15": "Innate vs adaptive, hypersensitivity, immunodeficiencies, cytokines",
+  "2026-04-16": "Inheritance patterns, trinucleotide repeats, chromosomal disorders, Hardy-Weinberg if needed",
+  "2026-04-17": "Lysosomal storage diseases, peroxisomal disorders, fatty acid oxidation, glycogen storage diseases",
+  "2026-04-18": "None pre-exam; only misses after",
+  "2026-04-19": "Missed-topic rewatch only",
+  "2026-04-20": "Vitamins, lysosomal diseases, peroxisomal diseases, urea cycle if weak",
+  "2026-04-21": "None, unless you use OMM series for isolated weak points",
+  "2026-04-22": "Short immunodeficiency and inheritance videos only",
+  "2026-04-23": "Fatty acid oxidation, glycogen storage, complement, transplant/immunosuppressants",
+  "2026-04-24": "Chromosomal disorders, tumor suppressor/oncogene basics, metabolic disease rapid pass",
+  "2026-04-25": "Only short targeted rewatch of weak psych or derm topics",
+  "2026-04-26": "Cranial nerves, visual pathway, eye movements, hearing loss, vertigo",
+  "2026-04-27": "Pituitary disorders, adrenal insufficiency, Cushing, pheo, MEN overview",
+  "2026-04-28": "Thyroid physiology/pathology, hyper/hypothyroidism, calcium/PTH disorders",
+  "2026-04-29": "Diabetes pathophys, insulin/pharm, oral diabetic drugs, DKA/HHS",
+  "2026-04-30": "Menstrual cycle, ovarian/testicular endocrine physiology, PCOS, MEN syndromes",
+  "2026-05-01": "Contraception, pregnancy physiology, reproductive endocrine basics",
+  "2026-05-02": "Endocrine rapid review, endocrine pharm summary",
+  "2026-05-03": "Cardiac cycle, heart sounds/murmurs intro, lung volumes/PFT intro",
+  "2026-05-04": "Whichever of pituitary/adrenal/thyroid/diabetes/repro endocrine was weakest",
+  "2026-05-05": "Valvular lesions, heart failure, cardiomyopathies, heart sounds",
+  "2026-05-06": "ACS/MI, antiarrhythmics, AV blocks, tachyarrhythmias, EKG basics",
+  "2026-05-07": "Shock states, pressure-volume/hemodynamics, pulmonary circulation, gas exchange",
+  "2026-05-08": "None except weak-miss review",
+  "2026-05-09": "None except misses",
+  "2026-05-10": "Only NBME misses",
+  "2026-05-11": "PFT interpretation, hypoxemia, obstructive vs restrictive disease, PE, pulm HTN",
+  "2026-05-12": "Hepatitis, cirrhosis, bilirubin metabolism, gallbladder/biliary disease",
+  "2026-05-13": "Nephritic syndromes, renal cell/bladder pathology, stones, pelvic pathology if needed",
+  "2026-05-14": "IBD/IBS, malabsorption, GI bleeding, appendicitis/diverticular disease",
+  "2026-05-15": "Acid-base disorders, sodium/potassium disorders, nephrotic vs nephritic, tubular disorders",
+  "2026-05-16": "None except misses",
+  "2026-05-17": "Only NBME misses",
+  "2026-05-18": "Renal phys + acid-base, liver/biliary, bowel pathology, GU infections if weak",
+  "2026-05-19": "Spinal cord tracts, brainstem lesions, stroke localization, cortical syndromes",
+  "2026-05-20": "Seizure types/drugs, Parkinson vs Huntington, tremor disorders, migraine/headache",
+  "2026-05-21": "CN lesions, pupillary defects, visual field cuts, eye movement disorders, hearing/vestibular",
+  "2026-05-22": "UMN vs LMN, neuropathies, myasthenia, Lambert-Eaton, muscular dystrophies",
+  "2026-05-23": "None except misses",
+  "2026-05-24": "Only NBME misses",
+  "2026-05-25": "Biostatistics, screening/prevention, ethics/professionalism",
+  "2026-05-26": "None except misses",
+  "2026-05-27": "Bone pathology, fractures, upper/lower extremity injuries, compartment syndrome",
+  "2026-05-28": "Low back pain, inflammatory arthritides, crystal arthropathies, connective tissue disease",
+  "2026-05-29": "Bone tumors, muscle disease, rheum rapid review",
+  "2026-05-30": "None except misses",
+  "2026-05-31": "Only assessment misses",
+  "2026-06-01": "Biostats formulas, ethics, quick weak-topic rewatch only",
+  "2026-06-02": "None except misses",
+  "2026-06-03": "Any missed MSK/rheum/neuromuscular videos",
+  "2026-06-04": "Antidepressants/antipsychotics, derm lesions/rashes, anemias/coags, metabolism weak points",
+  "2026-06-05": "Only weakest remaining sections",
+  "2026-06-06": "None except misses",
+  "2026-06-07": "Misses only",
+  "2026-06-08": "Short weak-topic rewatch only; no new videos",
+  "2026-06-09": "Biostats/ethics/one or two confidence-building weak topics only",
+  "2026-06-10": "None",
+  "2026-06-12": "None",
+  "2026-06-13": "None except misses",
+  "2026-06-14": "Misses only",
+  "2026-06-15": "Metabolism, immunodeficiencies, hypersensitivity, inheritance/chromosomes",
+  "2026-06-16": "Psych pharm, derm lesions, anemia/coag, endocrine/repro weak spots",
+  "2026-06-17": "Lesion localization, stroke syndromes, arrhythmias/EKG, PFT/hypoxemia",
+  "2026-06-18": "Renal acid-base, electrolytes, liver/GI bleed, rheum/MSK rapid pass",
+  "2026-06-19": "None",
+  "2026-06-20": "None",
+};
+
 const els = {
   countdownGrid: document.getElementById("countdownGrid"),
   jumpToTodayBtn: document.getElementById("jumpToTodayBtn"),
@@ -2599,19 +2674,35 @@ function getNextDate(date) {
 function getContentFocusText(day) {
   const focus = String(day.contentFocus || "").trim();
   const faReference = firstAidReferencesByDate[day.date];
-  if (!faReference) {
-    return focus;
+  const bbReference = boardsAndBeyondReferencesByDate[day.date];
+  const lines = [];
+  if (focus) {
+    lines.push(focus);
   }
-  return focus ? `${focus}\nFA: ${faReference}` : `FA: ${faReference}`;
+  if (faReference) {
+    lines.push(`FA: ${faReference}`);
+  }
+  if (bbReference) {
+    lines.push(`B&B: ${bbReference}`);
+  }
+  return lines.join("\n");
 }
 
 function getCalendarContentFocusText(day) {
   const focus = String(day.contentFocus || "").trim();
   const faReference = firstAidReferencesByDate[day.date];
-  if (!faReference) {
-    return focus;
+  const bbReference = boardsAndBeyondReferencesByDate[day.date];
+  const lines = [];
+  if (focus) {
+    lines.push(focus);
   }
-  return focus ? `${focus} • FA: ${faReference}` : `FA: ${faReference}`;
+  if (faReference) {
+    lines.push(`FA: ${faReference}`);
+  }
+  if (bbReference) {
+    lines.push(`B&B: ${bbReference}`);
+  }
+  return lines.join(" • ");
 }
 
 function getInitialDate() {
