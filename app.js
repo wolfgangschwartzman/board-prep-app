@@ -1434,10 +1434,12 @@ function getBacklogItems() {
 
 function renderReviewQueue(backlog) {
   const queue = buildReviewQueue(backlog);
+  const reviewedToday = queue.filter((item) => item.reviewedToday);
   const dueQueue = queue.filter((item) => item.due);
-  const currentItem = dueQueue[0] || null;
-  const completedToday = Math.max(queue.length - dueQueue.length, 0);
+  const currentItem = dueQueue[0] || (reviewedToday.length === 0 ? queue[0] || null : null);
+  const completedToday = reviewedToday.length;
   const totalToday = queue.length;
+  const showingFallback = Boolean(currentItem && !currentItem.due);
 
   if (!totalToday) {
     els.reviewQueue.innerHTML = `
@@ -1468,10 +1470,14 @@ function renderReviewQueue(backlog) {
 
   els.reviewQueue.innerHTML = `
     <div class="topic-tag-summary-label">Review queue</div>
-    <div class="muted review-queue-help">Mark reviewed to snooze this tag until its next due date, then the next due tag will appear.</div>
+    <div class="muted review-queue-help">${
+      showingFallback
+        ? "Nothing is formally due yet, but this tag is surfacing so the queue still gives you a daily review target."
+        : "Mark reviewed to snooze this tag until its next due date, then the next due tag will appear."
+    }</div>
     <div class="review-queue-progress">
       <span>${completedToday} of ${totalToday} reviewed today</span>
-      <span>${dueQueue.length} left</span>
+      <span>${Math.max(totalToday - completedToday, 0)} left</span>
       <div class="review-queue-progress-bar">
         <span class="review-queue-progress-fill" style="width:${(completedToday / totalToday) * 100}%"></span>
       </div>
@@ -1493,7 +1499,7 @@ function renderReviewQueue(backlog) {
           <span>${currentItem.count} miss${currentItem.count === 1 ? "" : "es"}</span>
           <span>Last seen ${escapeHtml(shortDateFormatter.format(new Date(`${currentItem.lastSeen}T12:00:00`)))}</span>
           <span>${escapeHtml(currentItem.lastReviewed ? `Last reviewed ${shortDateFormatter.format(new Date(`${currentItem.lastReviewed}T12:00:00`))}` : "Never reviewed")}</span>
-          <span>Due now</span>
+          <span>${showingFallback ? "Daily focus pick" : "Due now"}</span>
         </div>
       </div>
     </div>
@@ -1502,7 +1508,7 @@ function renderReviewQueue(backlog) {
 
 function buildReviewQueue(backlog) {
   const reviewLog = state.storage.tagReviewLog || {};
-  const currentDate = state.selectedDate;
+  const currentDate = getTodayIsoDate();
   const counts = new Map();
 
   backlog.forEach((day) => {
@@ -1555,7 +1561,7 @@ function handleReviewQueueClick(event) {
   if (!state.storage.tagReviewLog) {
     state.storage.tagReviewLog = {};
   }
-  state.storage.tagReviewLog[tag] = state.selectedDate;
+  state.storage.tagReviewLog[tag] = getTodayIsoDate();
   const nextCandidates = getReviewPromptCandidates(getBacklogItems());
   state.reviewPromptIndex = nextCandidates.length ? state.reviewPromptIndex % nextCandidates.length : 0;
   persistStorage();
@@ -3048,6 +3054,10 @@ function getInitialDate() {
   const today = new Date();
   const iso = toIsoDate(today);
   return schedule.some((item) => item.date === iso) ? iso : schedule[0].date;
+}
+
+function getTodayIsoDate() {
+  return toIsoDate(new Date());
 }
 
 function normalizeNumber(value) {
