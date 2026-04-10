@@ -2675,7 +2675,7 @@ function getNextDate(date) {
 
 function getContentFocusText(day) {
   const focus = String(day.contentFocus || "").trim();
-  const faReference = firstAidReferencesByDate[day.date];
+  const faReference = getVisibleFirstAidReference(day.date);
   const bbReference = boardsAndBeyondReferencesByDate[day.date];
   const lines = [];
   if (focus) {
@@ -2692,7 +2692,7 @@ function getContentFocusText(day) {
 
 function getCalendarContentFocusText(day) {
   const focus = String(day.contentFocus || "").trim();
-  const faReference = firstAidReferencesByDate[day.date];
+  const faReference = getVisibleFirstAidReference(day.date);
   const bbReference = boardsAndBeyondReferencesByDate[day.date];
   const lines = [];
   if (focus) {
@@ -2705,6 +2705,17 @@ function getCalendarContentFocusText(day) {
     lines.push(`B&B: ${bbReference}`);
   }
   return lines.join(" • ");
+}
+
+function getVisibleFirstAidReference(date) {
+  const faReference = String(firstAidReferencesByDate[date] || "").trim();
+  if (!faReference) {
+    return "";
+  }
+  if (/no new fa pages/i.test(faReference)) {
+    return "";
+  }
+  return faReference;
 }
 
 function getInitialDate() {
