@@ -836,7 +836,7 @@ function renderDetail() {
     },
     {
       title: "Evening Notes",
-      body: day.notes || "No preset evening block",
+      body: formatEveningNotes(day.notes) || "No preset evening block",
       field: "notes",
       defaultValue: "No preset evening block",
     },
@@ -2716,6 +2716,14 @@ function getVisibleFirstAidReference(date) {
     return "";
   }
   return faReference;
+}
+
+function formatEveningNotes(value) {
+  const notes = String(value || "").trim();
+  if (/^misses to anki$/i.test(notes)) {
+    return "Anki";
+  }
+  return notes;
 }
 
 function getInitialDate() {
