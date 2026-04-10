@@ -2892,10 +2892,18 @@ function getVisibleFirstAidReference(date) {
 
 function formatEveningNotes(value) {
   const notes = String(value || "").trim();
-  if (/^misses to anki$/i.test(notes)) {
+  if (/\banki\b/i.test(notes)) {
     return "Anki";
   }
   return notes;
+}
+
+function getEveningNoteSegments(value) {
+  return String(value || "")
+    .split(/\s*\+\s*/g)
+    .map((line) => formatEveningNotes(line))
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 function getInitialDate() {
@@ -3000,10 +3008,7 @@ function getStudyPlanTaskKeys(day, entry) {
     keys.push("Content Focus");
   }
 
-  const eveningSegments = String(formatEveningNotes(day.notes) || "No preset evening block")
-    .split(/\s*\+\s*/g)
-    .map((line) => line.trim())
-    .filter(Boolean);
+  const eveningSegments = getEveningNoteSegments(formatEveningNotes(day.notes) || "No preset evening block");
   if (eveningSegments.length > 1) {
     eveningSegments.forEach((segment) => keys.push(`Evening Notes::${segment}`));
   } else {
@@ -3157,10 +3162,7 @@ function renderEveningNotesItem(item, entry) {
     return renderPlanFieldEditor(item);
   }
 
-  const segments = String(item.body || "")
-    .split(/\s*\+\s*/g)
-    .map((line) => line.trim())
-    .filter(Boolean);
+  const segments = getEveningNoteSegments(item.body);
 
   if (segments.length <= 1) {
     return renderEditablePlanItem(item, entry);
