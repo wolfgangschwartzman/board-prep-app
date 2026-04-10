@@ -1117,7 +1117,7 @@ function renderTrendChartCard(chart) {
 
 function handleTrendPointHover(event) {
   const target = event.target.closest("[data-tooltip]");
-  if (!(target instanceof HTMLElement)) {
+  if (!(target instanceof Element)) {
     return;
   }
   const card = target.closest(".trend-card");
@@ -1130,7 +1130,7 @@ function handleTrendPointHover(event) {
 
 function handleTrendPointLeave(event) {
   const target = event.target.closest("[data-tooltip]");
-  if (!(target instanceof HTMLElement)) {
+  if (!(target instanceof Element)) {
     return;
   }
   const related = event.relatedTarget;
