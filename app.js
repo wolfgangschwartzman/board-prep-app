@@ -1456,6 +1456,7 @@ function renderReviewQueue(backlog) {
       <div class="topic-tag-summary-label">Review queue</div>
       <div class="review-queue-progress">
         <span>All ${totalToday} tags reviewed for today</span>
+        <button type="button" class="mini-btn review-reset-btn" data-action="reset-review-today">Reset today</button>
         <div class="review-queue-progress-bar">
           <span class="review-queue-progress-fill" style="width:100%"></span>
         </div>
@@ -1478,6 +1479,7 @@ function renderReviewQueue(backlog) {
     <div class="review-queue-progress">
       <span>${completedToday} of ${totalToday} reviewed today</span>
       <span>${Math.max(totalToday - completedToday, 0)} left</span>
+      <button type="button" class="mini-btn review-reset-btn" data-action="reset-review-today">Reset today</button>
       <div class="review-queue-progress-bar">
         <span class="review-queue-progress-fill" style="width:${(completedToday / totalToday) * 100}%"></span>
       </div>
@@ -1549,6 +1551,12 @@ function buildReviewQueue(backlog) {
 }
 
 function handleReviewQueueClick(event) {
+  const resetButton = event.target.closest('[data-action="reset-review-today"]');
+  if (resetButton) {
+    resetReviewQueueToday();
+    return;
+  }
+
   const button = event.target.closest('[data-action="mark-tag-reviewed"]');
   if (!button) {
     return;
@@ -1565,6 +1573,20 @@ function handleReviewQueueClick(event) {
   state.storage.tagReviewLog[tag] = getTodayIsoDate();
   const nextCandidates = getReviewPromptCandidates(getBacklogItems());
   state.reviewPromptIndex = nextCandidates.length ? state.reviewPromptIndex % nextCandidates.length : 0;
+  persistStorage();
+  renderBacklog();
+}
+
+function resetReviewQueueToday() {
+  const today = getTodayIsoDate();
+  const reviewLog = { ...(state.storage.tagReviewLog || {}) };
+  Object.keys(reviewLog).forEach((tag) => {
+    if (reviewLog[tag] === today) {
+      delete reviewLog[tag];
+    }
+  });
+  state.storage.tagReviewLog = reviewLog;
+  state.reviewPromptIndex = 0;
   persistStorage();
   renderBacklog();
 }
