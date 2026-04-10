@@ -1128,12 +1128,7 @@ function renderExamPreview(exams) {
 }
 
 function renderBacklog() {
-  const backlog = schedule
-    .filter((day) => {
-      const entry = getEntry(day.date);
-      return (entry.weakTopics && entry.weakTopics.trim()) || (day.date < getInitialDate() && !entry.completed);
-    })
-    .slice(0, 12);
+  const backlog = getBacklogItems();
 
   renderReviewQueue(backlog);
   renderTopicsPreview(backlog);
@@ -1162,6 +1157,15 @@ function renderBacklog() {
       `;
     })
     .join("");
+}
+
+function getBacklogItems() {
+  return schedule
+    .filter((day) => {
+      const entry = getEntry(day.date);
+      return (entry.weakTopics && entry.weakTopics.trim()) || (day.date < getInitialDate() && !entry.completed);
+    })
+    .slice(0, 12);
 }
 
 function renderReviewQueue(backlog) {
@@ -1288,13 +1292,20 @@ function handleReviewQueueClick(event) {
     state.storage.tagReviewLog = {};
   }
   state.storage.tagReviewLog[tag] = state.selectedDate;
+  const nextCandidates = getReviewPromptCandidates(getBacklogItems());
+  state.reviewPromptIndex = nextCandidates.length ? state.reviewPromptIndex % nextCandidates.length : 0;
   persistStorage();
   renderBacklog();
 }
 
 function getReviewPromptCandidate(backlog) {
   const candidates = getReviewPromptCandidates(backlog);
-  return candidates.length ? candidates[state.reviewPromptIndex % candidates.length] : null;
+  if (!candidates.length) {
+    state.reviewPromptIndex = 0;
+    return null;
+  }
+  state.reviewPromptIndex %= candidates.length;
+  return candidates[state.reviewPromptIndex];
 }
 
 function getReviewPromptCandidates(backlog) {
