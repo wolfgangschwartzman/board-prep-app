@@ -1525,7 +1525,8 @@ function buildReviewQueue(backlog) {
 
   return [...counts.values()]
     .map((item) => {
-      const lastReviewed = reviewLog[item.tag] || "";
+      const loggedReviewDate = reviewLog[item.tag] || "";
+      const lastReviewed = loggedReviewDate && loggedReviewDate <= currentDate ? loggedReviewDate : "";
       const intervalDays = item.count >= 4 ? 2 : item.count === 3 ? 3 : item.count === 2 ? 4 : 5;
       const daysSinceReviewed = lastReviewed ? getDaysBetween(lastReviewed, currentDate) : 999;
       const due = !lastReviewed || daysSinceReviewed >= intervalDays;
