@@ -544,8 +544,8 @@ function syncBackgroundPickerUi() {
   });
   const customPreview = els.backgroundPicker?.querySelector("[data-custom-preview]");
   if (customPreview instanceof HTMLElement) {
-    customPreview.style.backgroundImage = state.storage.customBackgroundData
-      ? `url("${state.storage.customBackgroundData}")`
+    customPreview.style.background = state.storage.customBackgroundData
+      ? `linear-gradient(135deg, rgba(20, 28, 36, 0.08), rgba(20, 28, 36, 0.18)), url(${state.storage.customBackgroundData}) center / cover no-repeat`
       : "";
   }
   renderThemePreview();
