@@ -1445,8 +1445,8 @@ function renderReviewQueue(backlog) {
   if (!totalToday) {
     els.reviewQueue.innerHTML = `
       <div class="review-queue-empty">
-        <strong>Review queue is empty</strong>
-        <div class="muted">Add weak topics and recurring tags will start surfacing here.</div>
+        <strong>No review tags yet</strong>
+        <div class="muted">Add weak topics and they will appear here.</div>
       </div>
     `;
     return;
@@ -1456,53 +1456,53 @@ function renderReviewQueue(backlog) {
     els.reviewQueue.innerHTML = `
       <div class="topic-tag-summary-label">Review queue</div>
       <div class="review-queue-progress">
-        <span>All ${totalToday} tags reviewed for today</span>
+        <span>${totalToday} of ${totalToday} reviewed</span>
         <button type="button" class="mini-btn review-reset-btn" data-action="reset-review-today">Reset today</button>
         <div class="review-queue-progress-bar">
           <span class="review-queue-progress-fill" style="width:100%"></span>
         </div>
       </div>
       <div class="review-queue-empty">
-        <strong>Nice work. You are caught up for today.</strong>
-        <div class="muted">Tags will return here automatically when they become due again.</div>
+        <strong>Caught up for today</strong>
       </div>
     `;
     return;
   }
 
+  const leftToday = Math.max(totalToday - completedToday, 0);
+  const progressWidth = totalToday ? (completedToday / totalToday) * 100 : 0;
+  const statusLabel = showingFallback ? "Focus pick" : "Due now";
+
   els.reviewQueue.innerHTML = `
     <div class="topic-tag-summary-label">Review queue</div>
-    <div class="muted review-queue-help">${
-      showingFallback
-        ? "Nothing is formally due yet, but this tag is surfacing so the queue still gives you a daily review target."
-        : "Mark reviewed to snooze this tag until its next due date, then the next due tag will appear."
-    }</div>
     <div class="review-queue-progress">
-      <span>${completedToday} of ${totalToday} reviewed today</span>
-      <span>${Math.max(totalToday - completedToday, 0)} left</span>
+      <span>${completedToday} of ${totalToday} reviewed</span>
+      <span>${leftToday} left</span>
       <button type="button" class="mini-btn review-reset-btn" data-action="reset-review-today">Reset today</button>
       <div class="review-queue-progress-bar">
-        <span class="review-queue-progress-fill" style="width:${(completedToday / totalToday) * 100}%"></span>
+        <span class="review-queue-progress-fill" style="width:${progressWidth}%"></span>
       </div>
     </div>
     <div class="review-queue-list">
       <div class="review-queue-item due">
-        <div class="review-queue-top">
-          <span class="topic-tag-pill">${escapeHtml(currentItem.tag)}</span>
+        <div class="review-queue-top compact">
+          <div class="review-queue-tagline">
+            <span class="topic-tag-pill">${escapeHtml(currentItem.tag)}</span>
+            <span class="review-queue-status">${statusLabel}</span>
+          </div>
           <button
             type="button"
             class="mini-btn review-queue-btn"
             data-action="mark-tag-reviewed"
             data-tag="${escapeHtml(currentItem.tag)}"
           >
-            Mark reviewed
+            Reviewed
           </button>
         </div>
         <div class="review-queue-meta">
           <span>${currentItem.count} miss${currentItem.count === 1 ? "" : "es"}</span>
           <span>Last seen ${escapeHtml(shortDateFormatter.format(new Date(`${currentItem.lastSeen}T12:00:00`)))}</span>
-          <span>${escapeHtml(currentItem.lastReviewed ? `Last reviewed ${shortDateFormatter.format(new Date(`${currentItem.lastReviewed}T12:00:00`))}` : "Never reviewed")}</span>
-          <span>${showingFallback ? "Daily focus pick" : "Due now"}</span>
+          <span>${escapeHtml(currentItem.lastReviewed ? `Reviewed ${shortDateFormatter.format(new Date(`${currentItem.lastReviewed}T12:00:00`))}` : "Never reviewed")}</span>
         </div>
       </div>
     </div>

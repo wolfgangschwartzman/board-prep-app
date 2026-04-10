@@ -1049,14 +1049,9 @@ button {
   gap: 10px;
 }
 
-.review-queue-help {
-  margin-bottom: 10px;
-  font-size: 0.88rem;
-}
-
 .review-queue-progress {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: 6px 12px;
   align-items: center;
   margin-bottom: 10px;
@@ -1099,17 +1094,37 @@ button {
   align-items: center;
 }
 
+.review-queue-top.compact {
+  gap: 12px;
+}
+
+.review-queue-tagline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.review-queue-status {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rust);
+}
+
 .review-queue-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 12px;
+  gap: 6px 12px;
   margin-top: 8px;
   color: var(--muted);
-  font-size: 0.84rem;
+  font-size: 0.8rem;
 }
 
 .review-queue-btn {
   flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .review-queue-btn.active {
@@ -1123,6 +1138,10 @@ button {
   border-radius: 18px;
   border: 2px solid color-mix(in srgb, var(--navy) 14%, transparent);
   background: color-mix(in srgb, var(--card-surface-a) 92%, transparent);
+}
+
+.review-reset-btn {
+  white-space: nowrap;
 }
 
 .topic-tag-summary-label {
