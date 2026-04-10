@@ -45,6 +45,14 @@ const themeOptions = [
   { id: "midnight", label: "Midnight" },
 ];
 
+const backgroundOptions = [
+  { id: "clean", label: "Clean" },
+  { id: "library", label: "Library" },
+  { id: "botanical", label: "Botanical" },
+  { id: "coastline", label: "Coastline" },
+  { id: "atlas", label: "Atlas" },
+];
+
 const systemPalette = {
   "OMM-heavy": { color: "#8b5e3c", soft: "#efe2d1" },
   "Psych/Derm/Heme Onc": { color: "#a4475f", soft: "#f6dbe3" },
@@ -306,6 +314,7 @@ const els = {
   themeCollapseBtn: document.getElementById("themeCollapseBtn"),
   themePreview: document.getElementById("themePreview"),
   themePicker: document.getElementById("themePicker"),
+  backgroundPicker: document.getElementById("backgroundPicker"),
 };
 
 init();
@@ -314,6 +323,7 @@ function init() {
   state.selectedMonth = state.selectedDate.slice(0, 7);
   populateScheduleControls();
   renderThemePicker();
+  renderBackgroundPicker();
   applyTheme();
   bindEvents();
   syncScheduleImportUi();
@@ -441,6 +451,7 @@ function bindEvents() {
   els.applyScheduleImportBtn.addEventListener("click", applyScheduleImport);
   els.resetScheduleBtn.addEventListener("click", resetToBuiltInSchedule);
   els.themePicker.addEventListener("click", handleThemePickerClick);
+  els.backgroundPicker.addEventListener("click", handleBackgroundPickerClick);
   els.pasteTlBtn.addEventListener("click", () => importPastedReport("TrueLearn"));
   els.pasteUwBtn.addEventListener("click", () => importPastedReport("UWorld"));
 }
@@ -453,6 +464,7 @@ function render() {
   }
   els.typeFilter.value = state.filterType;
   syncThemePickerUi();
+  syncBackgroundPickerUi();
   syncCalendarLayout();
   syncExamLayout();
   syncTopicsLayout();
@@ -493,10 +505,39 @@ function renderThemePicker() {
     .join("");
 }
 
+function renderBackgroundPicker() {
+  if (!els.backgroundPicker) {
+    return;
+  }
+  els.backgroundPicker.innerHTML = backgroundOptions
+    .map(
+      (background) => `
+        <button
+          type="button"
+          class="backdrop-chip backdrop-choice-${escapeHtml(background.id)}"
+          data-background-id="${escapeHtml(background.id)}"
+          aria-label="${escapeHtml(background.label)} background"
+        >
+          <span class="backdrop-chip-preview"></span>
+          <span>${escapeHtml(background.label)}</span>
+        </button>
+      `
+    )
+    .join("");
+}
+
 function syncThemePickerUi() {
   const activeTheme = state.storage.theme || "sandstone";
   els.themePicker?.querySelectorAll("[data-theme-id]").forEach((button) => {
     button.classList.toggle("active", button.dataset.themeId === activeTheme);
+  });
+  renderThemePreview();
+}
+
+function syncBackgroundPickerUi() {
+  const activeBackground = state.storage.backgroundPreset || "clean";
+  els.backgroundPicker?.querySelectorAll("[data-background-id]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.backgroundId === activeBackground);
   });
   renderThemePreview();
 }
@@ -515,8 +556,23 @@ function handleThemePickerClick(event) {
   render();
 }
 
+function handleBackgroundPickerClick(event) {
+  const button = event.target.closest("[data-background-id]");
+  if (!(button instanceof HTMLElement)) {
+    return;
+  }
+  const backgroundId = button.dataset.backgroundId;
+  if (!backgroundOptions.some((background) => background.id === backgroundId)) {
+    return;
+  }
+  state.storage.backgroundPreset = backgroundId;
+  persistStorage();
+  render();
+}
+
 function applyTheme() {
   document.body.dataset.theme = state.storage.theme || "sandstone";
+  document.body.dataset.backdrop = state.storage.backgroundPreset || "clean";
 }
 
 function syncScheduleImportUi() {
@@ -563,10 +619,14 @@ function renderThemePreview() {
   }
   const activeThemeId = state.storage.theme || "sandstone";
   const activeTheme = themeOptions.find((theme) => theme.id === activeThemeId) || themeOptions[0];
+  const activeBackgroundId = state.storage.backgroundPreset || "clean";
+  const activeBackground =
+    backgroundOptions.find((background) => background.id === activeBackgroundId) || backgroundOptions[0];
   els.themePreview.innerHTML = `
     <div class="exam-preview-label">Active palette</div>
     <strong>${escapeHtml(activeTheme.label)}</strong>
-    <div class="muted">Expand to switch themes.</div>
+    <div><span class="muted">Background:</span> ${escapeHtml(activeBackground.label)}</div>
+    <div class="muted">Expand to switch themes and background art.</div>
   `;
 }
 
@@ -2699,6 +2759,7 @@ function sanitizeImportedStorage(storage) {
     hiddenExams: storage.hiddenExams || [],
     tagReviewLog: storage.tagReviewLog || {},
     theme: storage.theme || "sandstone",
+    backgroundPreset: storage.backgroundPreset || "clean",
     scheduleEdits: storage.scheduleEdits || {},
     scheduleOverride: storage.scheduleOverride?.length ? normalizeSchedule(storage.scheduleOverride) : [],
   };
