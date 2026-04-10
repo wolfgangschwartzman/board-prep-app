@@ -2899,7 +2899,7 @@ function renderContentFocusItem(item, entry) {
           <span class="task-check">${allComplete ? "✓" : ""}</span>
         </div>
       </div>
-      <div class="task-chip-row">
+      <div class="task-chip-stack">
         ${lines
           .map((line) => {
             const taskTitle = `${item.title}::${line}`;

@@ -1717,6 +1717,17 @@ button {
   scrollbar-width: thin;
 }
 
+.task-chip-stack {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.task-chip-stack .task-chip {
+  width: 100%;
+  justify-content: flex-start;
+}
+
 .task-chip {
   display: inline-flex;
   flex: 0 0 auto;
