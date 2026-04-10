@@ -490,6 +490,10 @@ body[data-backdrop="atlas"] {
   --page-art-opacity: 0.28;
 }
 
+body[data-backdrop="custom"] {
+  --page-art-opacity: 0.24;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -2123,6 +2127,12 @@ textarea {
 
 .backdrop-choice-atlas .backdrop-chip-preview {
   background-image: url("./assets/backgrounds/atlas.svg");
+}
+
+.backdrop-choice-custom .backdrop-chip-preview {
+  background:
+    linear-gradient(135deg, rgba(47, 127, 116, 0.22), rgba(188, 98, 62, 0.18)),
+    linear-gradient(180deg, rgba(252, 247, 238, 0.98), rgba(243, 233, 219, 0.92));
 }
 
 .theme-choice-sandstone {

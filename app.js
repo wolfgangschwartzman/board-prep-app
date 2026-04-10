@@ -51,6 +51,7 @@ const backgroundOptions = [
   { id: "botanical", label: "Botanical" },
   { id: "coastline", label: "Coastline" },
   { id: "atlas", label: "Atlas" },
+  { id: "custom", label: "Upload Your Own" },
 ];
 
 const systemPalette = {
@@ -315,6 +316,7 @@ const els = {
   themePreview: document.getElementById("themePreview"),
   themePicker: document.getElementById("themePicker"),
   backgroundPicker: document.getElementById("backgroundPicker"),
+  customBackgroundInput: document.getElementById("customBackgroundInput"),
 };
 
 init();
@@ -452,6 +454,7 @@ function bindEvents() {
   els.resetScheduleBtn.addEventListener("click", resetToBuiltInSchedule);
   els.themePicker.addEventListener("click", handleThemePickerClick);
   els.backgroundPicker.addEventListener("click", handleBackgroundPickerClick);
+  els.customBackgroundInput.addEventListener("change", handleCustomBackgroundSelect);
   els.pasteTlBtn.addEventListener("click", () => importPastedReport("TrueLearn"));
   els.pasteUwBtn.addEventListener("click", () => importPastedReport("UWorld"));
 }
@@ -518,7 +521,7 @@ function renderBackgroundPicker() {
           data-background-id="${escapeHtml(background.id)}"
           aria-label="${escapeHtml(background.label)} background"
         >
-          <span class="backdrop-chip-preview"></span>
+          <span class="backdrop-chip-preview" ${background.id === "custom" ? 'data-custom-preview="true"' : ""}></span>
           <span>${escapeHtml(background.label)}</span>
         </button>
       `
@@ -539,6 +542,12 @@ function syncBackgroundPickerUi() {
   els.backgroundPicker?.querySelectorAll("[data-background-id]").forEach((button) => {
     button.classList.toggle("active", button.dataset.backgroundId === activeBackground);
   });
+  const customPreview = els.backgroundPicker?.querySelector("[data-custom-preview]");
+  if (customPreview instanceof HTMLElement) {
+    customPreview.style.backgroundImage = state.storage.customBackgroundData
+      ? `url("${state.storage.customBackgroundData}")`
+      : "";
+  }
   renderThemePreview();
 }
 
@@ -565,14 +574,69 @@ function handleBackgroundPickerClick(event) {
   if (!backgroundOptions.some((background) => background.id === backgroundId)) {
     return;
   }
+  if (backgroundId === "custom") {
+    els.customBackgroundInput?.click();
+    return;
+  }
   state.storage.backgroundPreset = backgroundId;
   persistStorage();
   render();
 }
 
+function handleCustomBackgroundSelect(event) {
+  const [file] = event.target.files || [];
+  if (!file) {
+    return;
+  }
+  saveCustomBackground(file)
+    .then((dataUrl) => {
+      state.storage.customBackgroundData = dataUrl;
+      state.storage.backgroundPreset = "custom";
+      persistStorage();
+      render();
+    })
+    .finally(() => {
+      els.customBackgroundInput.value = "";
+    });
+}
+
+function saveCustomBackground(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("read failed"));
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error("image failed"));
+      image.onload = () => {
+        const maxWidth = 1800;
+        const scale = Math.min(1, maxWidth / Math.max(image.width, 1));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const context = canvas.getContext("2d");
+        if (!context) {
+          resolve(String(reader.result || ""));
+          return;
+        }
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      image.src = String(reader.result || "");
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function applyTheme() {
   document.body.dataset.theme = state.storage.theme || "sandstone";
   document.body.dataset.backdrop = state.storage.backgroundPreset || "clean";
+  if (state.storage.backgroundPreset === "custom" && state.storage.customBackgroundData) {
+    document.body.style.setProperty("--page-art-image", `url("${state.storage.customBackgroundData}")`);
+    document.body.style.setProperty("--page-art-opacity", "0.24");
+  } else {
+    document.body.style.removeProperty("--page-art-image");
+    document.body.style.removeProperty("--page-art-opacity");
+  }
 }
 
 function syncScheduleImportUi() {
@@ -2764,6 +2828,7 @@ function sanitizeImportedStorage(storage) {
     tagReviewLog: storage.tagReviewLog || {},
     theme: storage.theme || "sandstone",
     backgroundPreset: storage.backgroundPreset || "clean",
+    customBackgroundData: storage.customBackgroundData || "",
     scheduleEdits: storage.scheduleEdits || {},
     scheduleOverride: storage.scheduleOverride?.length ? normalizeSchedule(storage.scheduleOverride) : [],
   };
