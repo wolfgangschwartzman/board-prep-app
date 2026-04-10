@@ -761,9 +761,22 @@ h3 {
   display: block;
 }
 
+.trend-point-hit,
+.trend-point-dot {
+  cursor: pointer;
+}
+
 .trend-axis {
   stroke: color-mix(in srgb, var(--muted) 40%, transparent);
   stroke-width: 1.5;
+}
+
+.trend-hover-detail {
+  min-height: 2.8em;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
 }
 
 .trend-footer {

@@ -421,6 +421,8 @@ function bindEvents() {
   els.examList.addEventListener("change", handleExamTrackerChange);
   els.examList.addEventListener("click", handleExamTrackerClick);
   els.reviewQueue.addEventListener("click", handleReviewQueueClick);
+  els.trendCharts.addEventListener("mouseover", handleTrendPointHover);
+  els.trendCharts.addEventListener("mouseout", handleTrendPointLeave);
   els.exportBackupBtn.addEventListener("click", exportBackup);
   els.importBackupBtn.addEventListener("click", () => els.importBackupInput.click());
   els.importBackupInput.addEventListener("change", importBackup);
@@ -992,12 +994,16 @@ function renderExams() {
 }
 
 function renderTrendCharts() {
+  const tlAggregate = getAggregateForSource("TrueLearn");
+  const uwAggregate = getAggregateForSource("UWorld");
+  const tl25Aggregate = getTrueLearn25Average();
   const charts = [
     {
       title: "TrueLearn %",
       subtitle: "Percent correct by block",
       color: "#2f7f74",
       soft: "rgba(47, 127, 116, 0.14)",
+      summaryText: tlAggregate.averageText,
       points: getTrendPoints((block) => block.source === "TrueLearn" && Number(block.percent || 0) > 0),
     },
     {
@@ -1005,6 +1011,7 @@ function renderTrendCharts() {
       subtitle: "Percent correct by block",
       color: "#2e6e8d",
       soft: "rgba(46, 110, 141, 0.14)",
+      summaryText: uwAggregate.averageText,
       points: getTrendPoints((block) => block.source === "UWorld" && Number(block.percent || 0) > 0),
     },
     {
@@ -1012,6 +1019,7 @@ function renderTrendCharts() {
       subtitle: "Only 25-question TL blocks",
       color: "#bc623e",
       soft: "rgba(188, 98, 62, 0.14)",
+      summaryText: tl25Aggregate.text,
       points: getTrendPoints(
         (block) =>
           block.source === "TrueLearn" &&
@@ -1033,6 +1041,7 @@ function getTrendPoints(predicate) {
         date: day.date,
         value: Number(block.percent || 0),
         label: `${shortDateFormatter.format(new Date(`${day.date}T12:00:00`))} • ${Math.round(Number(block.percent || 0))}%`,
+        tooltip: `${longDateFormatter.format(new Date(`${day.date}T12:00:00`))} • ${block.label || "Question block"} • ${Number(block.percent || 0).toFixed(1)}% • ${Number(block.correct || 0)}/${Number(block.questions || 0)} correct`,
         key: `${day.date}-${index}`,
       }));
   });
@@ -1080,7 +1089,7 @@ function renderTrendChartCard(chart) {
           <strong>${escapeHtml(chart.title)}</strong>
           <div class="muted">${escapeHtml(chart.subtitle)}</div>
         </div>
-        <div class="trend-latest">${escapeHtml(latest.value.toFixed(1))}%</div>
+        <div class="trend-latest">${escapeHtml(chart.summaryText || "--")}</div>
       </div>
       <svg viewBox="0 0 ${width} ${height}" class="trend-svg" aria-hidden="true">
         <line x1="${paddingX}" y1="${height - paddingY}" x2="${width - paddingX}" y2="${height - paddingY}" class="trend-axis" />
@@ -1089,19 +1098,51 @@ function renderTrendChartCard(chart) {
         ${coords
           .map(
             (point) => `
-              <circle cx="${point.x}" cy="${point.y}" r="4" fill="${chart.color}">
-                <title>${escapeHtml(point.label)}</title>
-              </circle>
+              <g class="trend-point-group">
+                <circle cx="${point.x}" cy="${point.y}" r="10" fill="transparent" class="trend-point-hit" data-tooltip="${escapeHtml(point.tooltip)}"></circle>
+                <circle cx="${point.x}" cy="${point.y}" r="4" fill="${chart.color}" class="trend-point-dot" data-tooltip="${escapeHtml(point.tooltip)}"></circle>
+              </g>
             `
           )
           .join("")}
       </svg>
+      <div class="trend-hover-detail" data-default-text="Hover a point for details">Hover a point for details</div>
       <div class="trend-footer">
         <span>${escapeHtml(chart.points[0].label.split(" • ")[0])}</span>
         <span>${escapeHtml(latest.label.split(" • ")[0])}</span>
       </div>
     </div>
   `;
+}
+
+function handleTrendPointHover(event) {
+  const target = event.target.closest("[data-tooltip]");
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+  const card = target.closest(".trend-card");
+  const detail = card?.querySelector(".trend-hover-detail");
+  if (!(detail instanceof HTMLElement)) {
+    return;
+  }
+  detail.textContent = target.dataset.tooltip || detail.dataset.defaultText || "";
+}
+
+function handleTrendPointLeave(event) {
+  const target = event.target.closest("[data-tooltip]");
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+  const related = event.relatedTarget;
+  if (related instanceof Node && target.closest(".trend-card")?.contains(related)) {
+    return;
+  }
+  const card = target.closest(".trend-card");
+  const detail = card?.querySelector(".trend-hover-detail");
+  if (!(detail instanceof HTMLElement)) {
+    return;
+  }
+  detail.textContent = detail.dataset.defaultText || "Hover a point for details";
 }
 
 function renderExamPreview(exams) {
