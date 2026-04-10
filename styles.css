@@ -2131,8 +2131,9 @@ textarea {
 
 .backdrop-choice-custom .backdrop-chip-preview {
   background:
-    linear-gradient(135deg, rgba(47, 127, 116, 0.22), rgba(188, 98, 62, 0.18)),
-    linear-gradient(180deg, rgba(252, 247, 238, 0.98), rgba(243, 233, 219, 0.92));
+    linear-gradient(135deg, rgba(47, 127, 116, 0.12), rgba(188, 98, 62, 0.1)),
+    linear-gradient(180deg, rgba(252, 247, 238, 0.92), rgba(243, 233, 219, 0.84));
+  background-blend-mode: soft-light, normal;
 }
 
 .theme-choice-sandstone {
