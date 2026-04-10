@@ -9,6 +9,7 @@ const state = {
   examsCollapsed: true,
   topicsCollapsed: true,
   reviewPromptIndex: 0,
+  selectedTrendPoints: {},
   csvImport: null,
   planEditor: null,
   storage: loadStorage(),
@@ -421,6 +422,7 @@ function bindEvents() {
   els.examList.addEventListener("change", handleExamTrackerChange);
   els.examList.addEventListener("click", handleExamTrackerClick);
   els.reviewQueue.addEventListener("click", handleReviewQueueClick);
+  els.trendCharts.addEventListener("click", handleTrendPointClick);
   els.trendCharts.addEventListener("mouseover", handleTrendPointHover);
   els.trendCharts.addEventListener("mousemove", handleTrendPointMove);
   els.trendCharts.addEventListener("mouseout", handleTrendPointLeave);
@@ -1000,6 +1002,7 @@ function renderTrendCharts() {
   const tl25Aggregate = getTrueLearn25Average();
   const charts = [
     {
+      id: "truelearn",
       title: "TrueLearn %",
       subtitle: "Percent correct by block",
       color: "#2f7f74",
@@ -1008,6 +1011,7 @@ function renderTrendCharts() {
       points: getTrendPoints((block) => block.source === "TrueLearn" && Number(block.percent || 0) > 0),
     },
     {
+      id: "uworld",
       title: "UWorld %",
       subtitle: "Percent correct by block",
       color: "#2e6e8d",
@@ -1016,6 +1020,7 @@ function renderTrendCharts() {
       points: getTrendPoints((block) => block.source === "UWorld" && Number(block.percent || 0) > 0),
     },
     {
+      id: "truelearn25",
       title: "TrueLearn 25Q %",
       subtitle: "Only 25-question TL blocks",
       color: "#bc623e",
@@ -1043,6 +1048,9 @@ function getTrendPoints(predicate) {
         value: Number(block.percent || 0),
         label: `${shortDateFormatter.format(new Date(`${day.date}T12:00:00`))} • ${Math.round(Number(block.percent || 0))}%`,
         tooltip: `${longDateFormatter.format(new Date(`${day.date}T12:00:00`))} • ${block.label || "Question block"} • ${Number(block.percent || 0).toFixed(1)}% • ${Number(block.correct || 0)}/${Number(block.questions || 0)} correct`,
+        blockLabel: block.label || "Question block",
+        correct: Number(block.correct || 0),
+        questions: Number(block.questions || 0),
         key: `${day.date}-${index}`,
       }));
   });
@@ -1082,9 +1090,10 @@ function renderTrendChartCard(chart) {
   const polyline = coords.map((point) => `${point.x},${point.y}`).join(" ");
   const area = `${paddingX},${height - paddingY} ${polyline} ${coords[coords.length - 1].x},${height - paddingY}`;
   const latest = chart.points[chart.points.length - 1];
+  const selectedPoints = getSelectedTrendPointObjects(chart);
 
   return `
-    <div class="trend-card">
+    <div class="trend-card" data-chart-id="${escapeHtml(chart.id)}">
       <div class="trend-card-header">
         <div>
           <strong>${escapeHtml(chart.title)}</strong>
@@ -1100,20 +1109,47 @@ function renderTrendChartCard(chart) {
           .map(
             (point) => `
               <g class="trend-point-group">
-                <circle cx="${point.x}" cy="${point.y}" r="10" fill="transparent" class="trend-point-hit" data-tooltip="${escapeHtml(point.tooltip)}"></circle>
-                <circle cx="${point.x}" cy="${point.y}" r="4" fill="${chart.color}" class="trend-point-dot" data-tooltip="${escapeHtml(point.tooltip)}"></circle>
+                <circle cx="${point.x}" cy="${point.y}" r="10" fill="transparent" class="trend-point-hit" data-chart-id="${escapeHtml(chart.id)}" data-point-key="${escapeHtml(point.key)}" data-tooltip="${escapeHtml(point.tooltip)}"></circle>
+                <circle cx="${point.x}" cy="${point.y}" r="4" fill="${chart.color}" class="trend-point-dot ${isTrendPointSelected(chart.id, point.key) ? "selected" : ""}" data-chart-id="${escapeHtml(chart.id)}" data-point-key="${escapeHtml(point.key)}" data-tooltip="${escapeHtml(point.tooltip)}"></circle>
               </g>
             `
           )
           .join("")}
       </svg>
       <div class="trend-hover-detail" data-default-text="Hover a point for details">Hover a point for details</div>
+      <div class="trend-selected-details">
+        ${
+          selectedPoints.length
+            ? selectedPoints
+                .map(
+                  (point) => `
+                    <div class="trend-selected-item">
+                      <strong>${escapeHtml(shortDateFormatter.format(new Date(`${point.date}T12:00:00`)))}</strong>
+                      <span>${escapeHtml(point.blockLabel)} • ${escapeHtml(point.value.toFixed(1))}% • ${escapeHtml(`${point.correct}/${point.questions}`)} correct</span>
+                    </div>
+                  `
+                )
+                .join("")
+            : '<div class="trend-selected-empty">Click points to pin them here.</div>'
+        }
+      </div>
       <div class="trend-footer">
         <span>${escapeHtml(chart.points[0].label.split(" • ")[0])}</span>
         <span>${escapeHtml(latest.label.split(" • ")[0])}</span>
       </div>
     </div>
   `;
+}
+
+function isTrendPointSelected(chartId, pointKey) {
+  return Boolean(state.selectedTrendPoints[chartId]?.includes(pointKey));
+}
+
+function getSelectedTrendPointObjects(chart) {
+  const selected = state.selectedTrendPoints[chart.id] || [];
+  return chart.points
+    .filter((point) => selected.includes(point.key))
+    .sort((a, b) => a.date.localeCompare(b.date) || a.key.localeCompare(b.key));
 }
 
 function handleTrendPointHover(event) {
@@ -1152,6 +1188,30 @@ function handleTrendPointMove(event) {
       detail.textContent = detail.dataset.defaultText || "Hover a point for details";
     }
   });
+}
+
+function handleTrendPointClick(event) {
+  const target = event.target.closest("[data-point-key]");
+  if (!(target instanceof Element)) {
+    return;
+  }
+  const chartId = target.getAttribute("data-chart-id") || "";
+  const pointKey = target.getAttribute("data-point-key") || "";
+  if (!chartId || !pointKey) {
+    return;
+  }
+  const selected = [...(state.selectedTrendPoints[chartId] || [])];
+  const index = selected.indexOf(pointKey);
+  if (index >= 0) {
+    selected.splice(index, 1);
+  } else {
+    selected.push(pointKey);
+  }
+  state.selectedTrendPoints = {
+    ...state.selectedTrendPoints,
+    [chartId]: selected,
+  };
+  renderTrendCharts();
 }
 
 function renderExamPreview(exams) {
