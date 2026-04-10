@@ -2892,6 +2892,14 @@ function getVisibleFirstAidReference(date) {
 
 function formatEveningNotes(value) {
   const notes = String(value || "").trim();
+  if (/^misses to anki$/i.test(notes)) {
+    return "Anki";
+  }
+  return notes;
+}
+
+function formatEveningNoteSegment(value) {
+  const notes = String(value || "").trim();
   if (/\banki\b/i.test(notes)) {
     return "Anki";
   }
@@ -2901,7 +2909,7 @@ function formatEveningNotes(value) {
 function getEveningNoteSegments(value) {
   return String(value || "")
     .split(/\s*\+\s*/g)
-    .map((line) => formatEveningNotes(line))
+    .map((line) => formatEveningNoteSegment(line))
     .map((line) => line.trim())
     .filter(Boolean);
 }
