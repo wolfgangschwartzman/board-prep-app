@@ -846,6 +846,8 @@ function renderDetail() {
         ? renderQbankPlanItem(item, entry, day.date)
         : item.title === "Content Focus"
         ? renderContentFocusItem(item, entry)
+        : item.title === "Evening Notes"
+        ? renderEveningNotesItem(item, entry)
         : renderEditablePlanItem(item, entry)
     )
     .join("") + renderCustomTaskItems(entry);
@@ -2847,7 +2849,15 @@ function getStudyPlanTaskKeys(day, entry) {
     keys.push("Content Focus");
   }
 
-  keys.push("Evening Notes");
+  const eveningSegments = String(formatEveningNotes(day.notes) || "No preset evening block")
+    .split(/\s*\+\s*/g)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (eveningSegments.length > 1) {
+    eveningSegments.forEach((segment) => keys.push(`Evening Notes::${segment}`));
+  } else {
+    keys.push("Evening Notes");
+  }
 
   (entry.customTasks || []).forEach((task) => {
     keys.push(`Custom Task::${task.id}`);
@@ -2982,6 +2992,61 @@ function renderContentFocusItem(item, entry) {
               >
                 <span class="task-chip-check">${active ? "✓" : ""}</span>
                 <span>${escapeHtml(line)}</span>
+              </button>
+            `;
+          })
+          .join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderEveningNotesItem(item, entry) {
+  if (isEditingPlanField(item.field)) {
+    return renderPlanFieldEditor(item);
+  }
+
+  const segments = String(item.body || "")
+    .split(/\s*\+\s*/g)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (segments.length <= 1) {
+    return renderEditablePlanItem(item, entry);
+  }
+
+  const allComplete = segments.every((segment) => isTaskComplete(entry, `${item.title}::${segment}`));
+
+  return `
+    <div class="plan-item static ${allComplete ? "complete" : ""}">
+      <div class="task-toggle-top">
+        <strong>${escapeHtml(item.title)}</strong>
+        <div class="task-toggle-actions">
+          <button
+            type="button"
+            class="mini-btn subtle-edit-btn"
+            data-action="edit-plan-field"
+            data-field="${escapeHtml(item.field)}"
+          >
+            Edit
+          </button>
+          <span class="task-check">${allComplete ? "✓" : ""}</span>
+        </div>
+      </div>
+      <div class="task-chip-stack">
+        ${segments
+          .map((segment) => {
+            const taskTitle = `${item.title}::${segment}`;
+            const active = isTaskComplete(entry, taskTitle);
+            return `
+              <button
+                type="button"
+                class="task-chip ${active ? "active" : ""}"
+                data-task-title="${escapeHtml(taskTitle)}"
+                title="${escapeHtml(segment)}"
+              >
+                <span class="task-chip-check">${active ? "✓" : ""}</span>
+                <span>${escapeHtml(segment)}</span>
               </button>
             `;
           })
