@@ -844,6 +844,8 @@ function renderDetail() {
     .map((item) =>
       item.title === "Qbank Plan"
         ? renderQbankPlanItem(item, entry, day.date)
+        : item.title === "Content Focus"
+        ? renderContentFocusItem(item, entry)
         : renderEditablePlanItem(item, entry)
     )
     .join("") + renderCustomTaskItems(entry);
@@ -2856,6 +2858,61 @@ function renderQbankPlanItem(item, entry, date) {
               >
                 <span class="task-chip-check">${active ? "✓" : ""}</span>
                 <span>${escapeHtml(block.label)}</span>
+              </button>
+            `;
+          })
+          .join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderContentFocusItem(item, entry) {
+  if (isEditingPlanField(item.field)) {
+    return renderPlanFieldEditor(item);
+  }
+
+  const lines = String(item.body || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length <= 1) {
+    return renderEditablePlanItem(item, entry);
+  }
+
+  const allComplete = lines.every((line) => isTaskComplete(entry, `${item.title}::${line}`));
+
+  return `
+    <div class="plan-item static ${allComplete ? "complete" : ""}">
+      <div class="task-toggle-top">
+        <strong>${escapeHtml(item.title)}</strong>
+        <div class="task-toggle-actions">
+          <button
+            type="button"
+            class="mini-btn subtle-edit-btn"
+            data-action="edit-plan-field"
+            data-field="${escapeHtml(item.field)}"
+          >
+            Edit
+          </button>
+          <span class="task-check">${allComplete ? "✓" : ""}</span>
+        </div>
+      </div>
+      <div class="task-chip-row">
+        ${lines
+          .map((line) => {
+            const taskTitle = `${item.title}::${line}`;
+            const active = isTaskComplete(entry, taskTitle);
+            return `
+              <button
+                type="button"
+                class="task-chip ${active ? "active" : ""}"
+                data-task-title="${escapeHtml(taskTitle)}"
+                title="${escapeHtml(line)}"
+              >
+                <span class="task-chip-check">${active ? "✓" : ""}</span>
+                <span>${escapeHtml(line)}</span>
               </button>
             `;
           })
