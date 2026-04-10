@@ -1809,8 +1809,12 @@ function handleTaskToggleClick(event) {
     ...existing,
     taskChecks,
   };
+  syncDayCompletionFromTasks(date);
   persistStorage();
   renderDetail();
+  renderTodaySpotlight();
+  renderSnapshot();
+  renderCalendar();
 }
 
 function handlePlanEditorKeydown(event) {
@@ -1852,6 +1856,7 @@ function addCustomTask() {
     ...existing,
     customTasks,
   };
+  syncDayCompletionFromTasks(date);
   persistStorage();
   renderDetail();
 }
@@ -1868,8 +1873,21 @@ function removeCustomTask(taskId) {
     customTasks,
     taskChecks,
   };
+  syncDayCompletionFromTasks(date);
   persistStorage();
   renderDetail();
+}
+
+function syncDayCompletionFromTasks(date) {
+  const day = getDay(date);
+  const existing = getEntry(date);
+  const taskKeys = getStudyPlanTaskKeys(day, existing);
+  const allComplete = taskKeys.length > 0 && taskKeys.every((taskKey) => isTaskComplete(existing, taskKey));
+
+  state.storage.entries[date] = {
+    ...existing,
+    completed: allComplete,
+  };
 }
 
 function savePlanEdit(source) {
@@ -1918,6 +1936,7 @@ function updatePlanField(field, value) {
   }
 
   state.storage.scheduleEdits = overrides;
+  syncDayCompletionFromTasks(date);
   persistStorage();
 }
 
@@ -2804,6 +2823,37 @@ function getTrueLearn25Average() {
 
 function isTaskComplete(entry, title) {
   return Boolean(entry.taskChecks && entry.taskChecks[title]);
+}
+
+function getStudyPlanTaskKeys(day, entry) {
+  const keys = [];
+
+  keys.push("Obligations");
+
+  const qbankBlocks = parseQbankBlocks(day.qbankPlan, day.date);
+  if (qbankBlocks.length) {
+    qbankBlocks.forEach((block) => keys.push(`Qbank Plan::${block.label}`));
+  } else {
+    keys.push("Qbank Plan");
+  }
+
+  const contentLines = String(getContentFocusText(day) || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (contentLines.length > 1) {
+    contentLines.forEach((line) => keys.push(`Content Focus::${line}`));
+  } else {
+    keys.push("Content Focus");
+  }
+
+  keys.push("Evening Notes");
+
+  (entry.customTasks || []).forEach((task) => {
+    keys.push(`Custom Task::${task.id}`);
+  });
+
+  return keys;
 }
 
 function typeClass(type) {
