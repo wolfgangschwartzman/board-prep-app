@@ -2358,7 +2358,7 @@ function handleScheduleCsvSelect(event) {
         headerRowIndex,
       };
       renderScheduleImportMapper();
-      els.scheduleImportStatus.textContent = `Loaded ${dataRows.length} rows from a ${parsedImport.delimiterLabel} file. Map your columns, then import your schedule.`;
+      els.scheduleImportStatus.textContent = `Loaded ${dataRows.length} rows from a ${parsedImport.delimiterLabel} file. Map your columns, then import your schedule. Minimum needed: date and system.`;
     } catch (error) {
       state.csvImport = null;
       els.scheduleImportStatus.textContent = "That spreadsheet file could not be read. Export as CSV from Excel or Google Sheets and make sure there is a header row.";
@@ -2432,7 +2432,7 @@ function applyScheduleImport() {
   const result = buildImportedSchedule(state.csvImport);
   if (!result.schedule.length) {
     els.scheduleImportStatus.textContent =
-      "Import failed. Make sure date, system, type, and content focus are mapped and each imported row has those values.";
+      "Import failed. Make sure date and system are mapped and that the imported rows contain valid dates.";
     return;
   }
 
@@ -2478,18 +2478,18 @@ function guessScheduleMappings(headers) {
   return {
     date: findHeader([/^date$/, /studydate/, /daydate/, /plandate/, /calendar/, /scheduledate/]),
     system: findHeader([/^system$/, /rotation/, /subject/, /discipline/, /unit/, /organ/, /module/, /theme/]),
-    type: findHeader([/^type$/, /daytype/, /sessiontype/, /daykind/, /plantype/, /category/]),
-    contentFocus: findHeader([/contentfocus/, /focus/, /topic/, /studytopic/, /content/, /assignment/, /focusarea/, /chapter/]),
-    qbankPlan: findHeader([/qbank/, /questions/, /blocks/, /questionplan/, /questionbank/, /qb/, /questiontarget/]),
-    obligations: findHeader([/obligation/, /school/, /class/, /lecture/, /meeting/, /lab/, /clinic/, /responsibilit/]),
-    notes: findHeader([/^notes?$/, /evening/, /comment/, /reminder/, /misc/, /detail/, /extra/]),
+    type: findHeader([/^type$/, /daytype/, /sessiontype/, /daykind/, /plantype/, /category/, /examtype/, /daylabel/]),
+    contentFocus: findHeader([/contentfocus/, /focus/, /topic/, /studytopic/, /content/, /assignment/, /focusarea/, /chapter/, /firstaid/, /^fa$/, /bnb/, /boardsandbeyond/, /plan/, /tasks?/, /tod[oa]/]),
+    qbankPlan: findHeader([/qbank/, /questions/, /blocks/, /questionplan/, /questionbank/, /qb/, /questiontarget/, /uworld/, /trulearn/, /truelearn/, /vcom/]),
+    obligations: findHeader([/obligation/, /school/, /class/, /lecture/, /meeting/, /lab/, /clinic/, /responsibilit/, /rotationnotes/, /fixed/]),
+    notes: findHeader([/^notes?$/, /evening/, /comment/, /reminder/, /misc/, /detail/, /extra/, /review/, /followup/, /carry/]),
     phase: findHeader([/^phase$/, /block/, /sprint/, /period/, /stage/]),
     week: findHeader([/^week$/, /weeknumber/, /weekof/, /studyweek/]),
   };
 }
 
 function buildImportedSchedule(csvImport) {
-  const required = ["date", "system", "type", "contentFocus"];
+  const required = ["date", "system"];
   if (required.some((field) => !csvImport.mappings[field])) {
     return { schedule: [], skippedRows: 0, duplicateDates: 0 };
   }
@@ -2509,9 +2509,13 @@ function buildImportedSchedule(csvImport) {
 
       const date = normalizeImportedDate(read("date"));
       const system = read("system");
-      const type = read("type");
-      const contentFocus = read("contentFocus");
-      if (!date || !system || !type || !contentFocus) {
+      const type = read("type") || "Study";
+      const contentFocus =
+        read("contentFocus") ||
+        read("qbankPlan") ||
+        read("notes") ||
+        system;
+      if (!date || !system) {
         skippedRows += 1;
         return null;
       }
