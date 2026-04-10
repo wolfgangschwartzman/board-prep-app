@@ -8,6 +8,7 @@ const state = {
   calendarExpanded: false,
   examsCollapsed: true,
   topicsCollapsed: true,
+  themeCollapsed: true,
   reviewPromptIndex: 0,
   selectedTrendPoints: {},
   csvImport: null,
@@ -302,6 +303,8 @@ const els = {
   applyScheduleImportBtn: document.getElementById("applyScheduleImportBtn"),
   resetScheduleBtn: document.getElementById("resetScheduleBtn"),
   backupStatus: document.getElementById("backupStatus"),
+  themeCollapseBtn: document.getElementById("themeCollapseBtn"),
+  themePreview: document.getElementById("themePreview"),
   themePicker: document.getElementById("themePicker"),
 };
 
@@ -368,6 +371,10 @@ function bindEvents() {
   els.topicsCollapseBtn.addEventListener("click", () => {
     state.topicsCollapsed = !state.topicsCollapsed;
     syncTopicsLayout();
+  });
+  els.themeCollapseBtn.addEventListener("click", () => {
+    state.themeCollapsed = !state.themeCollapsed;
+    syncThemeLayout();
   });
   els.nextReviewPromptBtn.addEventListener("click", showNextReviewPrompt);
 
@@ -449,6 +456,7 @@ function render() {
   syncCalendarLayout();
   syncExamLayout();
   syncTopicsLayout();
+  syncThemeLayout();
   syncScheduleImportUi();
   renderCountdowns();
   renderTodaySpotlight();
@@ -490,6 +498,7 @@ function syncThemePickerUi() {
   els.themePicker?.querySelectorAll("[data-theme-id]").forEach((button) => {
     button.classList.toggle("active", button.dataset.themeId === activeTheme);
   });
+  renderThemePreview();
 }
 
 function handleThemePickerClick(event) {
@@ -538,6 +547,27 @@ function syncTopicsLayout() {
   topicsCard?.classList.toggle("collapsed", state.topicsCollapsed);
   els.topicsCollapseBtn.textContent = state.topicsCollapsed ? "Expand Topics" : "Collapse Topics";
   els.topicsPreview.classList.toggle("hidden", !state.topicsCollapsed);
+}
+
+function syncThemeLayout() {
+  const themeCard = els.themePicker.closest(".utility-card");
+  themeCard?.classList.toggle("collapsed", state.themeCollapsed);
+  els.themeCollapseBtn.textContent = state.themeCollapsed ? "Expand Palette" : "Collapse Palette";
+  els.themePreview.classList.toggle("hidden", !state.themeCollapsed);
+  renderThemePreview();
+}
+
+function renderThemePreview() {
+  if (!els.themePreview) {
+    return;
+  }
+  const activeThemeId = state.storage.theme || "sandstone";
+  const activeTheme = themeOptions.find((theme) => theme.id === activeThemeId) || themeOptions[0];
+  els.themePreview.innerHTML = `
+    <div class="exam-preview-label">Active palette</div>
+    <strong>${escapeHtml(activeTheme.label)}</strong>
+    <div class="muted">Expand to switch themes.</div>
+  `;
 }
 
 function scrollToPlanner() {
