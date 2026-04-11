@@ -2081,7 +2081,16 @@ function handleBlockTrackerClick(event) {
 }
 
 function handleTaskToggleClick(event) {
-  const editButton = event.target.closest('[data-action="edit-plan-field"]');
+  const interactiveTarget = event.target.closest(
+    '[data-action="edit-plan-field"], [data-action="cancel-plan-edit"], [data-action="save-plan-edit"], [data-action="remove-custom-task"], [data-task-title]'
+  );
+  if (!interactiveTarget) {
+    return;
+  }
+
+  event.preventDefault();
+
+  const editButton = interactiveTarget.closest('[data-action="edit-plan-field"]');
   if (editButton) {
     state.planEditor = {
       type: editButton.dataset.editorType || "field",
@@ -2092,20 +2101,20 @@ function handleTaskToggleClick(event) {
     return;
   }
 
-  const cancelButton = event.target.closest('[data-action="cancel-plan-edit"]');
+  const cancelButton = interactiveTarget.closest('[data-action="cancel-plan-edit"]');
   if (cancelButton) {
     state.planEditor = null;
     renderDetail();
     return;
   }
 
-  const saveButton = event.target.closest('[data-action="save-plan-edit"]');
+  const saveButton = interactiveTarget.closest('[data-action="save-plan-edit"]');
   if (saveButton) {
     savePlanEdit(saveButton);
     return;
   }
 
-  const removeButton = event.target.closest('[data-action="remove-custom-task"]');
+  const removeButton = interactiveTarget.closest('[data-action="remove-custom-task"]');
   if (removeButton) {
     const taskId = removeButton.dataset.taskId;
     if (!taskId) {
@@ -2115,12 +2124,11 @@ function handleTaskToggleClick(event) {
     return;
   }
 
-  const button = event.target.closest("[data-task-title]");
-  if (!button) {
+  const button = interactiveTarget.closest("[data-task-title]");
+  const title = button?.dataset.taskTitle;
+  if (!title) {
     return;
   }
-
-  const title = button.dataset.taskTitle;
   const date = state.selectedDate;
   const existing = getEntry(date);
   const taskChecks = { ...(existing.taskChecks || {}) };

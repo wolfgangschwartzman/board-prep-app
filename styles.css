@@ -1913,12 +1913,19 @@ button {
   border: 1px solid rgba(31, 37, 48, 0.14);
   background: rgba(255, 255, 255, 0.9);
   font-size: 0.76rem;
+  pointer-events: none;
 }
 
 .task-chip.active .task-chip-check {
   background: var(--teal);
   border-color: var(--teal);
   color: white;
+}
+
+.task-chip span,
+.task-toggle strong,
+.task-toggle .preserve-breaks {
+  pointer-events: none;
 }
 
 .entry-form {
