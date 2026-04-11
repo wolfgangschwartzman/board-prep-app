@@ -3228,7 +3228,7 @@ function renderQbankPlanItem(item, entry, date) {
   const blocks = parseQbankBlocks(item.body, date);
   if (!blocks.length) {
     return `
-      <div class="plan-item task-toggle ${isTaskComplete(entry, item.title) ? "active" : ""}">
+      <div class="plan-item task-toggle ${isTaskComplete(entry, item.title) ? "active" : ""}" data-task-title="${escapeHtml(item.title)}">
         <div class="task-toggle-top">
           <strong>${escapeHtml(item.title)}</strong>
           <div class="task-toggle-actions">
@@ -3447,7 +3447,7 @@ function renderCustomTaskItems(entry) {
         `;
       }
       return `
-        <div class="plan-item task-toggle custom-task-item ${active ? "active" : ""}">
+        <div class="plan-item task-toggle custom-task-item ${active ? "active" : ""}" data-task-title="${escapeHtml(taskTitle)}">
           <div class="task-toggle-top">
             <strong>Custom Task</strong>
             <div class="task-toggle-actions">
@@ -3494,7 +3494,7 @@ function renderEditablePlanItem(item, entry) {
   }
 
   return `
-    <div class="plan-item task-toggle ${isTaskComplete(entry, item.title) ? "active" : ""}">
+    <div class="plan-item task-toggle ${isTaskComplete(entry, item.title) ? "active" : ""}" data-task-title="${escapeHtml(item.title)}">
       <div class="task-toggle-top">
         <strong>${escapeHtml(item.title)}</strong>
         <div class="task-toggle-actions">
