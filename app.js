@@ -13,6 +13,7 @@ const state = {
   selectedTrendPoints: {},
   csvImport: null,
   planEditor: null,
+  draggedPlanItemId: "",
   storage: loadStorage(),
 };
 
@@ -430,6 +431,10 @@ function bindEvents() {
   els.blockTrackerList.addEventListener("click", handleBlockTrackerClick);
   els.detailPlan.addEventListener("click", handleTaskToggleClick);
   els.detailPlan.addEventListener("keydown", handlePlanEditorKeydown);
+  els.detailPlan.addEventListener("dragstart", handlePlanDragStart);
+  els.detailPlan.addEventListener("dragover", handlePlanDragOver);
+  els.detailPlan.addEventListener("drop", handlePlanDrop);
+  els.detailPlan.addEventListener("dragend", clearPlanDragState);
   els.addCustomTaskBtn.addEventListener("click", addCustomTask);
   els.customTaskInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -974,42 +979,9 @@ function renderDetail() {
     els.carryOverBox.innerHTML = "";
   }
 
-  els.detailPlan.innerHTML = [
-    {
-      title: "Obligations",
-      body: day.obligations || "No fixed school obligations",
-      field: "obligations",
-      defaultValue: "No fixed school obligations",
-    },
-    {
-      title: "Qbank Plan",
-      body: day.qbankPlan,
-      field: "qbankPlan",
-      defaultValue: "",
-    },
-    {
-      title: "Content Focus",
-      body: getContentFocusText(day),
-      field: "contentFocus",
-      defaultValue: "",
-    },
-    {
-      title: "Evening Notes",
-      body: formatEveningNotes(day.notes) || "No preset evening block",
-      field: "notes",
-      defaultValue: "No preset evening block",
-    },
-  ]
-    .map((item) =>
-      item.title === "Qbank Plan"
-        ? renderQbankPlanItem(item, entry, day.date)
-        : item.title === "Content Focus"
-        ? renderContentFocusItem(item, entry)
-        : item.title === "Evening Notes"
-        ? renderEveningNotesItem(item, entry)
-        : renderEditablePlanItem(item, entry)
-    )
-    .join("") + renderCustomTaskItems(entry);
+  els.detailPlan.innerHTML = getOrderedPlanItems(day, entry)
+    .map((item) => renderPlanItem(item, entry, day.date))
+    .join("");
 
   renderBlockTracker(entry);
   els.customTaskInput.value = "";
@@ -2167,6 +2139,82 @@ function handlePlanEditorKeydown(event) {
   }
 }
 
+function handlePlanDragStart(event) {
+  const handle = event.target.closest("[data-drag-plan-item]");
+  if (!(handle instanceof HTMLElement)) {
+    return;
+  }
+  const itemId = handle.dataset.dragPlanItem;
+  if (!itemId || !event.dataTransfer) {
+    return;
+  }
+  state.draggedPlanItemId = itemId;
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", itemId);
+  const item = handle.closest("[data-plan-item-id]");
+  if (item instanceof HTMLElement) {
+    item.classList.add("dragging");
+  }
+}
+
+function handlePlanDragOver(event) {
+  if (!state.draggedPlanItemId) {
+    return;
+  }
+  const targetItem = event.target.closest("[data-plan-item-id]");
+  if (!(targetItem instanceof HTMLElement) || targetItem.dataset.planItemId === state.draggedPlanItemId) {
+    return;
+  }
+  event.preventDefault();
+  clearPlanDropIndicators();
+  const rect = targetItem.getBoundingClientRect();
+  const before = event.clientY < rect.top + rect.height / 2;
+  targetItem.classList.add(before ? "drag-over-before" : "drag-over-after");
+}
+
+function handlePlanDrop(event) {
+  if (!state.draggedPlanItemId) {
+    return;
+  }
+  const targetItem = event.target.closest("[data-plan-item-id]");
+  if (!(targetItem instanceof HTMLElement)) {
+    clearPlanDragState();
+    return;
+  }
+  const targetId = targetItem.dataset.planItemId;
+  if (!targetId || targetId === state.draggedPlanItemId) {
+    clearPlanDragState();
+    return;
+  }
+  event.preventDefault();
+  const currentOrder = [...els.detailPlan.querySelectorAll("[data-plan-item-id]")]
+    .map((item) => item.dataset.planItemId)
+    .filter(Boolean);
+  const draggedIndex = currentOrder.indexOf(state.draggedPlanItemId);
+  const targetIndex = currentOrder.indexOf(targetId);
+  if (draggedIndex < 0 || targetIndex < 0) {
+    clearPlanDragState();
+    return;
+  }
+  currentOrder.splice(draggedIndex, 1);
+  const rect = targetItem.getBoundingClientRect();
+  const insertIndex = event.clientY < rect.top + rect.height / 2 ? targetIndex : targetIndex + 1;
+  currentOrder.splice(insertIndex > draggedIndex ? insertIndex - 1 : insertIndex, 0, state.draggedPlanItemId);
+  clearPlanDragState();
+  updatePlanOrder(currentOrder);
+}
+
+function clearPlanDropIndicators() {
+  els.detailPlan
+    .querySelectorAll(".drag-over-before, .drag-over-after, .dragging")
+    .forEach((item) => item.classList.remove("drag-over-before", "drag-over-after", "dragging"));
+}
+
+function clearPlanDragState() {
+  state.draggedPlanItemId = "";
+  clearPlanDropIndicators();
+}
+
 function addCustomTask() {
   const text = els.customTaskInput.value.trim();
   if (!text) {
@@ -2180,10 +2228,12 @@ function addCustomTask() {
     id: `task-${Date.now()}`,
     text,
   });
+  const planOrder = [...(existing.planOrder || []), `custom:${customTasks[customTasks.length - 1].id}`];
 
   state.storage.entries[date] = {
     ...existing,
     customTasks,
+    planOrder,
   };
   syncDayCompletionFromTasks(date);
   persistStorage();
@@ -2200,6 +2250,7 @@ function removeCustomTask(taskId) {
   state.storage.entries[date] = {
     ...existing,
     customTasks,
+    planOrder: (existing.planOrder || []).filter((itemId) => itemId !== `custom:${taskId}`),
     taskChecks,
   };
   syncDayCompletionFromTasks(date);
@@ -2217,6 +2268,98 @@ function syncDayCompletionFromTasks(date) {
     ...existing,
     completed: allComplete,
   };
+}
+
+function getOrderedPlanItems(day, entry) {
+  const baseItems = [
+    {
+      id: "obligations",
+      kind: "editable",
+      title: "Obligations",
+      body: day.obligations || "No fixed school obligations",
+      field: "obligations",
+      defaultValue: "No fixed school obligations",
+    },
+    {
+      id: "qbank-plan",
+      kind: "qbank",
+      title: "Qbank Plan",
+      body: day.qbankPlan,
+      field: "qbankPlan",
+      defaultValue: "",
+    },
+    {
+      id: "content-focus",
+      kind: "content",
+      title: "Content Focus",
+      body: getContentFocusText(day),
+      field: "contentFocus",
+      defaultValue: "",
+    },
+    {
+      id: "evening-notes",
+      kind: "evening",
+      title: "Evening Notes",
+      body: formatEveningNotes(day.notes) || "No preset evening block",
+      field: "notes",
+      defaultValue: "No preset evening block",
+    },
+  ];
+
+  const customItems = (entry.customTasks || []).map((task) => ({
+    id: `custom:${task.id}`,
+    kind: "custom-task",
+    task,
+  }));
+
+  const allItems = [...baseItems, ...customItems];
+  const savedOrder = entry.planOrder || [];
+  if (!savedOrder.length) {
+    return allItems;
+  }
+
+  const byId = new Map(allItems.map((item) => [item.id, item]));
+  const ordered = savedOrder.map((id) => byId.get(id)).filter(Boolean);
+  const seen = new Set(ordered.map((item) => item.id));
+  allItems.forEach((item) => {
+    if (!seen.has(item.id)) {
+      ordered.push(item);
+    }
+  });
+  return ordered;
+}
+
+function renderPlanItem(item, entry, date) {
+  if (item.kind === "qbank") {
+    return renderQbankPlanItem(item, entry, date);
+  }
+  if (item.kind === "content") {
+    return renderContentFocusItem(item, entry);
+  }
+  if (item.kind === "evening") {
+    return renderEveningNotesItem(item, entry);
+  }
+  if (item.kind === "custom-task") {
+    return renderCustomTaskItem(item, entry);
+  }
+  return renderEditablePlanItem(item, entry);
+}
+
+function renderPlanItemHandle(itemId, isDisabled = false) {
+  if (isDisabled) {
+    return "";
+  }
+  return `
+    <span
+      class="plan-drag-handle"
+      draggable="true"
+      data-drag-plan-item="${escapeHtml(itemId)}"
+      aria-label="Reorder study plan item"
+      title="Drag to reorder"
+    >
+      ⋮⋮
+    </span>
+  `;
 }
 
 function savePlanEdit(source) {
@@ -2282,6 +2425,17 @@ function updateCustomTaskText(taskId, value) {
     customTasks,
   };
   persistStorage();
+}
+
+function updatePlanOrder(order) {
+  const date = state.selectedDate;
+  const existing = getEntry(date);
+  state.storage.entries[date] = {
+    ...existing,
+    planOrder: order,
+  };
+  persistStorage();
+  renderDetail();
 }
 
 function handleExamTrackerChange(event) {
@@ -3228,10 +3382,11 @@ function renderQbankPlanItem(item, entry, date) {
   const blocks = parseQbankBlocks(item.body, date);
   if (!blocks.length) {
     return `
-      <div class="plan-item task-toggle ${isTaskComplete(entry, item.title) ? "active" : ""}" data-task-title="${escapeHtml(item.title)}">
-        <div class="task-toggle-top">
-          <strong>${escapeHtml(item.title)}</strong>
-          <div class="task-toggle-actions">
+    <div class="plan-item task-toggle ${isTaskComplete(entry, item.title) ? "active" : ""}" data-task-title="${escapeHtml(item.title)}" data-plan-item-id="${escapeHtml(item.id)}">
+      <div class="task-toggle-top">
+        <strong>${escapeHtml(item.title)}</strong>
+        <div class="task-toggle-actions">
+          ${renderPlanItemHandle(item.id)}
             <button
               type="button"
               class="mini-btn subtle-edit-btn"
@@ -3258,10 +3413,11 @@ function renderQbankPlanItem(item, entry, date) {
   const allComplete = blocks.every((block) => isTaskComplete(entry, `${item.title}::${block.label}`));
 
   return `
-    <div class="plan-item static ${allComplete ? "complete" : ""}">
+    <div class="plan-item static ${allComplete ? "complete" : ""}" data-plan-item-id="${escapeHtml(item.id)}">
       <div class="task-toggle-top">
         <strong>${escapeHtml(item.title)}</strong>
         <div class="task-toggle-actions">
+          ${renderPlanItemHandle(item.id)}
           <button
             type="button"
             class="mini-btn subtle-edit-btn"
@@ -3313,10 +3469,11 @@ function renderContentFocusItem(item, entry) {
   const allComplete = lines.every((line) => isTaskComplete(entry, `${item.title}::${line}`));
 
   return `
-    <div class="plan-item static ${allComplete ? "complete" : ""}">
+    <div class="plan-item static ${allComplete ? "complete" : ""}" data-plan-item-id="${escapeHtml(item.id)}">
       <div class="task-toggle-top">
         <strong>${escapeHtml(item.title)}</strong>
         <div class="task-toggle-actions">
+          ${renderPlanItemHandle(item.id)}
           <button
             type="button"
             class="mini-btn subtle-edit-btn"
@@ -3365,10 +3522,11 @@ function renderEveningNotesItem(item, entry) {
   const allComplete = segments.every((segment) => isTaskComplete(entry, `${item.title}::${segment}`));
 
   return `
-    <div class="plan-item static ${allComplete ? "complete" : ""}">
+    <div class="plan-item static ${allComplete ? "complete" : ""}" data-plan-item-id="${escapeHtml(item.id)}">
       <div class="task-toggle-top">
         <strong>${escapeHtml(item.title)}</strong>
         <div class="task-toggle-actions">
+          ${renderPlanItemHandle(item.id)}
           <button
             type="button"
             class="mini-btn subtle-edit-btn"
@@ -3403,22 +3561,17 @@ function renderEveningNotesItem(item, entry) {
   `;
 }
 
-function renderCustomTaskItems(entry) {
-  const customTasks = entry.customTasks || [];
-  if (!customTasks.length) {
-    return "";
-  }
-
-  return customTasks
-    .map((task) => {
-      const taskTitle = `Custom Task::${task.id}`;
-      const active = isTaskComplete(entry, taskTitle);
-      if (isEditingCustomTask(task.id)) {
-        return `
-          <div class="plan-item custom-task-item editor">
+function renderCustomTaskItem(item, entry) {
+  const task = item.task;
+  const taskTitle = `Custom Task::${task.id}`;
+  const active = isTaskComplete(entry, taskTitle);
+  if (isEditingCustomTask(task.id)) {
+    return `
+          <div class="plan-item custom-task-item editor" data-plan-item-id="${escapeHtml(item.id)}">
             <div class="task-toggle-top">
               <strong>Custom Task</strong>
               <div class="task-toggle-actions">
+                ${renderPlanItemHandle(item.id, true)}
                 <button
                   type="button"
                   class="mini-btn subtle-edit-btn"
@@ -3445,12 +3598,13 @@ function renderCustomTaskItems(entry) {
             />
           </div>
         `;
-      }
-      return `
-        <div class="plan-item task-toggle custom-task-item ${active ? "active" : ""}" data-task-title="${escapeHtml(taskTitle)}">
+  }
+  return `
+        <div class="plan-item task-toggle custom-task-item ${active ? "active" : ""}" data-task-title="${escapeHtml(taskTitle)}" data-plan-item-id="${escapeHtml(item.id)}">
           <div class="task-toggle-top">
             <strong>Custom Task</strong>
             <div class="task-toggle-actions">
+              ${renderPlanItemHandle(item.id)}
               <button
                 type="button"
                 class="mini-btn subtle-edit-btn"
@@ -3484,8 +3638,6 @@ function renderCustomTaskItems(entry) {
           </div>
         </div>
       `;
-    })
-    .join("");
 }
 
 function renderEditablePlanItem(item, entry) {

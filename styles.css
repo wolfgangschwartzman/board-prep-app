@@ -1754,6 +1754,39 @@ button {
   flex: 0 0 auto;
 }
 
+.plan-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--navy) 16%, transparent);
+  background: color-mix(in srgb, var(--field-bg) 88%, transparent);
+  color: var(--muted);
+  cursor: grab;
+  user-select: none;
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--navy) 8%, transparent);
+}
+
+.plan-drag-handle:active {
+  cursor: grabbing;
+}
+
+.plan-item[data-plan-item-id].dragging {
+  opacity: 0.65;
+}
+
+.plan-item[data-plan-item-id].drag-over-before {
+  border-top-color: var(--teal);
+  box-shadow: inset 0 4px 0 color-mix(in srgb, var(--teal) 56%, transparent), var(--card-shadow-soft);
+}
+
+.plan-item[data-plan-item-id].drag-over-after {
+  border-bottom-color: var(--teal);
+  box-shadow: inset 0 -4px 0 color-mix(in srgb, var(--teal) 56%, transparent), var(--card-shadow-soft);
+}
+
 .task-check {
   width: 26px;
   height: 26px;
