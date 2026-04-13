@@ -2526,22 +2526,111 @@ function addPracticeExam() {
 
 function addCarryOver() {
   const fromDay = getDay(state.selectedDate);
+  const fromEntry = getEntry(fromDay.date);
   const target = els.carryOverDate.value;
   if (!target || target === fromDay.date) {
     return;
   }
 
+  const unfinished = getIncompleteCarryOverTasks(fromDay, fromEntry);
+  if (!unfinished.length) {
+    return;
+  }
+
+  const targetEntry = getEntry(target);
+  const customTasks = [...(targetEntry.customTasks || [])];
+  const existingTexts = new Set(customTasks.map((task) => task.text));
+  const planOrder = [...(targetEntry.planOrder || [])];
   const carryText = `${shortDateFormatter.format(
     new Date(`${fromDay.date}T12:00:00`)
-  )}: ${fromDay.system} catch-up • ${fromDay.contentFocus}`;
+  )}: ${fromDay.system} catch-up`;
+  const existingCarryCards = state.storage.carryOvers[target] || [];
 
-  const existing = state.storage.carryOvers[target] || [];
-  if (!existing.includes(carryText)) {
-    state.storage.carryOvers[target] = [...existing, carryText];
-    persistStorage();
-    renderDetail();
-    renderBacklog();
+  unfinished.forEach((taskText) => {
+    if (!existingTexts.has(taskText)) {
+      const id = `task-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      customTasks.push({ id, text: taskText });
+      planOrder.push(`custom:${id}`);
+      existingTexts.add(taskText);
+    }
+  });
+
+  state.storage.entries[target] = {
+    ...targetEntry,
+    customTasks,
+    planOrder,
+  };
+
+  if (!existingCarryCards.includes(carryText)) {
+    state.storage.carryOvers[target] = [...existingCarryCards, carryText];
   }
+
+  persistStorage();
+  renderDetail();
+  renderBacklog();
+}
+
+function getIncompleteCarryOverTasks(day, entry) {
+  const tasks = [];
+  const addTask = (text) => {
+    const clean = String(text || "").trim();
+    if (!clean) {
+      return;
+    }
+    tasks.push(`${shortDateFormatter.format(new Date(`${day.date}T12:00:00`))} catch-up: ${clean}`);
+  };
+
+  if (!isTaskComplete(entry, "Obligations")) {
+    addTask(day.obligations || "School obligations");
+  }
+
+  const qbankBlocks = parseQbankBlocks(day.qbankPlan, day.date);
+  if (qbankBlocks.length) {
+    qbankBlocks.forEach((block) => {
+      const key = `Qbank Plan::${block.label}`;
+      if (!isTaskComplete(entry, key)) {
+        addTask(block.label);
+      }
+    });
+  } else if (!isTaskComplete(entry, "Qbank Plan") && day.qbankPlan) {
+    addTask(day.qbankPlan);
+  }
+
+  const contentLines = String(getContentFocusText(day) || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (contentLines.length > 1) {
+    contentLines.forEach((line) => {
+      const key = `Content Focus::${line}`;
+      if (!isTaskComplete(entry, key)) {
+        addTask(line);
+      }
+    });
+  } else if (!isTaskComplete(entry, "Content Focus") && contentLines[0]) {
+    addTask(contentLines[0]);
+  }
+
+  const eveningSegments = getEveningNoteSegments(formatEveningNotes(day.notes) || "No preset evening block");
+  if (eveningSegments.length > 1) {
+    eveningSegments.forEach((segment) => {
+      const key = `Evening Notes::${segment}`;
+      if (!isTaskComplete(entry, key)) {
+        addTask(segment);
+      }
+    });
+  } else if (!isTaskComplete(entry, "Evening Notes") && eveningSegments[0]) {
+    addTask(eveningSegments[0]);
+  }
+
+  (entry.customTasks || []).forEach((task) => {
+    const key = `Custom Task::${task.id}`;
+    if (!isTaskComplete(entry, key)) {
+      addTask(task.text);
+    }
+  });
+
+  return [...new Set(tasks)];
 }
 
 function exportBackup() {
