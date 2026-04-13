@@ -3742,60 +3742,103 @@ function getCalendarHeatLevel(entry) {
 
 function parseQbankBlocks(text, date) {
   const rawText = String(text || "");
-  const hasOptionalExtra = /\bopt\b/i.test(rawText) || /\boptional\b/i.test(rawText);
   const normalized = rawText
+    .replace(/\btrue\s*learn\b/gi, "TL")
+    .replace(/\btrulearn\b/gi, "TL")
+    .replace(/\buworld\b/gi, "UW")
     .replace(/\bopt\b/gi, "optional")
     .replace(/\s+/g, " ")
     .trim();
-  const parsingText = normalized
-    .replace(/\boptional\s+(?:\d+(?:-\d+)?\s*(?:TL|UW|VCOM)|(?:TL|UW)\s*\d+(?:-\d+)?)\b/gi, "")
-    .replace(/\boptional\s+extra\s+block(?:\s+if\s+energy)?\b/gi, "")
-    .trim();
 
   const blocks = [];
-  const seen = new Set();
+  const labelCounts = new Map();
+  let addedOptionalExtra = false;
 
-  const numberFirstMatches = [...parsingText.matchAll(/(\d+(?:-\d+)?)\s*(TL|UW|VCOM)\b/gi)];
-  const sourceFirstMatches = [...parsingText.matchAll(/\b(TL|UW)\s*(\d+(?:-\d+)?)\b/gi)];
-
-  [...numberFirstMatches, ...sourceFirstMatches].forEach((match) => {
-    const sourceFirst = /^[A-Z]/i.test(match[1]);
-    const source = (sourceFirst ? match[1] : match[2]).toUpperCase();
-    const count = sourceFirst ? match[2] : match[1];
-    const key = `${source}:${count}`;
-    if (seen.has(key)) {
-      return;
-    }
-    seen.add(key);
-
-    if (source === "TL") {
-      blocks.push({
-        label: `${count} TL`,
-        description: `${count} question TrueLearn block`,
-      });
-      return;
-    }
-    if (source === "UW") {
-      blocks.push({
-        label: `${count} UW`,
-        description: `${count} question UWorld block`,
-      });
-      return;
-    }
-    if (date && date < "2026-04-20") {
-      return;
-    }
+  const pushBlock = (label, description) => {
+    const nextCount = (labelCounts.get(label) || 0) + 1;
+    labelCounts.set(label, nextCount);
     blocks.push({
-      label: `${count} VCOM`,
-      description: "VCOM module quiz",
+      label: nextCount === 1 ? label : `${label} ${nextCount}`,
+      description,
     });
-  });
+  };
 
-  if (hasOptionalExtra || /\b(?:optional|opt)?\s*extra\s+block(?:\s+if\s+energy)?\b/i.test(normalized)) {
-    blocks.push({
-      label: "Extra",
-      description: "Optional extra question block if energy allows",
+  normalized
+    .split(/\s*;\s*/)
+    .map((group) => group.trim())
+    .filter(Boolean)
+    .forEach((group) => {
+      let sourceContext = "";
+      group
+        .split(/\s*\+\s*/)
+        .map((segment) => segment.trim())
+        .filter(Boolean)
+        .forEach((segment) => {
+          const explicitSourceMatch = segment.match(/\b(TL|UW|VCOM)\b/i);
+          if (explicitSourceMatch) {
+            sourceContext = explicitSourceMatch[1].toUpperCase();
+          }
+
+          const sourceFirstMatch = segment.match(/\b(TL|UW|VCOM)\s*(\d+(?:-\d+)?)\b/i);
+          const numberFirstMatch = segment.match(/\b(\d+(?:-\d+)?)\s*(TL|UW|VCOM)\b/i);
+          const fallbackCountMatch = segment.match(/\b(\d+(?:-\d+)?)\b/);
+          if (!sourceFirstMatch && !numberFirstMatch && !fallbackCountMatch) {
+            return;
+          }
+
+          const count = sourceFirstMatch?.[2] || numberFirstMatch?.[1] || fallbackCountMatch?.[1] || "";
+          const explicitSource = (sourceFirstMatch?.[1] || numberFirstMatch?.[2] || "").toUpperCase();
+          const source = explicitSource || sourceContext;
+          if (!source) {
+            return;
+          }
+
+          const optionalSegment = /\boptional\b|\bonly if helpful\b|\bif helpful\b|\bif energy\b/.test(segment);
+          if (optionalSegment) {
+            if (!addedOptionalExtra) {
+              pushBlock("Extra", "Optional extra question block if energy allows");
+              addedOptionalExtra = true;
+            }
+            return;
+          }
+
+          if (source === "VCOM") {
+            if (date && date < "2026-04-20") {
+              return;
+            }
+            pushBlock(`${count} VCOM`, "VCOM module quiz");
+            return;
+          }
+
+          if (/\btutor\b/i.test(segment) && source === "UW") {
+            pushBlock(`${count} UW Tutor`, `${count} question UWorld tutor set`);
+            return;
+          }
+
+          if (/\bfocus(?:ed)?\b/i.test(segment) && source === "TL") {
+            pushBlock(`${count} TL Focused`, `${count} question focused TrueLearn block`);
+            return;
+          }
+
+          if (/\btimed\b/i.test(segment) && source === "TL") {
+            pushBlock(`${count} TL Timed`, `${count} question timed TrueLearn block`);
+            return;
+          }
+
+          if (/\btimed\b/i.test(segment) && source === "UW") {
+            pushBlock(`${count} UW`, `${count} question UWorld block`);
+            return;
+          }
+
+          pushBlock(
+            `${count} ${source === "TL" ? "TL" : "UW"}`,
+            `${count} question ${source === "TL" ? "TrueLearn" : "UWorld"} block`
+          );
+        });
     });
+
+  if (!addedOptionalExtra && /\b(?:optional|opt)?\s*extra\s+block(?:\s+if\s+energy)?\b/i.test(normalized)) {
+    pushBlock("Extra", "Optional extra question block if energy allows");
   }
 
   if (!blocks.length) {
