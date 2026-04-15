@@ -310,6 +310,14 @@ body[data-theme="midnight"] .calendar-day.done {
     linear-gradient(180deg, color-mix(in srgb, var(--teal-soft) 18%, var(--card-surface-a)), color-mix(in srgb, var(--teal-soft) 24%, var(--card-surface-b)));
 }
 
+body[data-theme="midnight"] .calendar-day.active {
+  outline-color: color-mix(in srgb, var(--system-color, #87a8d8) 74%, white 26%);
+  box-shadow:
+    inset 0 3px 0 var(--system-color, transparent),
+    0 0 0 4px color-mix(in srgb, var(--system-color, #87a8d8) 20%, transparent),
+    0 18px 34px rgba(3, 7, 12, 0.34);
+}
+
 body[data-theme="midnight"] .coverage-item {
   background: linear-gradient(
     135deg,
@@ -1483,7 +1491,21 @@ button {
 }
 
 .calendar-day.active {
-  outline: 2px solid var(--system-color, var(--navy));
+  outline: 3px solid color-mix(in srgb, var(--system-color, var(--navy)) 88%, white 12%);
+  outline-offset: 2px;
+  box-shadow:
+    inset 0 3px 0 var(--system-color, transparent),
+    0 0 0 4px color-mix(in srgb, var(--system-color, var(--navy)) 14%, transparent),
+    0 16px 30px color-mix(in srgb, var(--system-color, rgba(23, 54, 93, 0.18)) 18%, transparent);
+  z-index: 2;
+}
+
+.calendar-day.active .day-number {
+  color: color-mix(in srgb, var(--system-color, var(--navy)) 76%, var(--ink) 24%);
+}
+
+.calendar-day.active .day-type {
+  border-color: color-mix(in srgb, var(--system-color, var(--navy)) 36%, transparent);
 }
 
 .calendar-day.done {
